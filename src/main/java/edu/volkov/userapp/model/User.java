@@ -3,12 +3,11 @@ package edu.volkov.userapp.model;
 import lombok.*;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
 
+@Access(AccessType.FIELD)
 @Entity
 @Getter
 @Setter
@@ -21,7 +20,7 @@ public class User extends AbstractPersistable<Integer> {
     @Size(max = 128)
     private String phoneNumber;
 
-    @Column(name = "email", unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     @Email
     @Size(max = 128)
     private String email;
