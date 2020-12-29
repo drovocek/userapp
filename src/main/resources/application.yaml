@@ -1,0 +1,27 @@
+#  https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+spring:
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+  datasource:
+    # ImMemory
+    url: jdbc:h2:mem:userapp
+    # tcp: jdbc:h2:tcp://localhost:9092/mem:userapp
+    username: sa
+    password:
+  h2.console.enabled: true
+
+  data.rest:
+    #  https://docs.spring.io/spring-data/rest/docs/current/reference/html/#getting-started.basic-settings
+    basePath: /api
+    returnBodyOnCreate: true
+
+logging:
+  level:
+    root: WARN
+    edu.volkov.userapp: DEBUG
