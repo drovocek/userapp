@@ -8,6 +8,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        id.new_generator_mappings: false
   datasource:
     # ImMemory
     url: jdbc:h2:mem:userapp
