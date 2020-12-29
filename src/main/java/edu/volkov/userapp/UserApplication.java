@@ -20,8 +20,8 @@ public class UserApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        repository.save(new User("+1 (111) 111-11-11","user1@gmail.com","User","First"));
-        repository.save(new User("+2 (222) 222-22-22","user2@gmail.com","User","Second"));
+//        repository.save(new User("+1 (111) 111-11-11","user1@gmail.com","User","First"));
+//        repository.save(new User("+2 (222) 222-22-22","user2@gmail.com","User","Second"));
         repository.findAll().forEach(System.out::println);
     }
 }
