@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Access(AccessType.FIELD)
@@ -17,8 +18,9 @@ import javax.validation.constraints.Size;
 @Table(name = "users")
 public class User extends AbstractPersistable<Integer> {
 
-    @Column(name = "phone_number")
+    @NotBlank
     @Size(max = 128)
+    @Column(name = "phone_number")
     private String phoneNumber;
 
     @Column(name = "email", nullable = false, unique = true)
@@ -26,12 +28,14 @@ public class User extends AbstractPersistable<Integer> {
     @Size(max = 128)
     private String email;
 
-    @Column(name = "first_name")
+    @NotBlank
     @Size(max = 128)
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "last_name")
+    @NotBlank
     @Size(max = 128)
+    @Column(name = "last_name")
     private String lastName;
 
     @JsonIgnore

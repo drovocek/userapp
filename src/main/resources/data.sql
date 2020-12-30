@@ -8,4 +8,4 @@ VALUES ('+1 (111) 111-11-11', 'mail1@gmail.com', 'First_name1', 'Last_Name1'),
        ('+7 (777) 777-77-77', 'mail7@gmail.com', 'First_name7', 'Last_Name7'),
        ('+8 (888) 888-88-88', 'mail8@gmail.com', 'First_name8', 'Last_Name8'),
        ('+9 (999) 999-99-99', 'mail9@gmail.com', 'First_name9', 'Last_Name9'),
-       ('+0 (000) 000-00-00', 'mail10@gmail.com', 'First_name10', 'Last_Name10');
+       ('+1 (111) 111-11-11', 'mail10@gmail.com', 'First_name10', 'Last_Name10');
