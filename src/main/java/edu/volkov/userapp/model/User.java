@@ -1,5 +1,6 @@
 package edu.volkov.userapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
@@ -32,6 +33,12 @@ public class User extends AbstractPersistable<Integer> {
     @Column(name = "last_name")
     @Size(max = 128)
     private String lastName;
+
+    @JsonIgnore
+    @Override
+    public boolean isNew() {
+        return super.isNew();
+    }
 
     @Override
     public String toString() {
