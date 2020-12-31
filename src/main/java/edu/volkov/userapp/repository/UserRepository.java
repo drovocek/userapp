@@ -21,10 +21,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @RestResource(rel = "filter", path = "filter")
     @Query("SELECT u FROM User u WHERE " +
-            "(u.phoneNumber LIKE COALESCE(CONCAT('%',:phoneNumber),'%')) AND " +
-            "(u.email LIKE COALESCE(CONCAT('%',:email),'%')) AND " +
-            "(u.firstName LIKE COALESCE(CONCAT('%',:firstName),'%')) AND " +
-            "(u.lastName LIKE COALESCE(CONCAT('%',:lastName),'%'))")
+            "(LOWER(u.phoneNumber) LIKE LOWER(CONCAT('%',COALESCE(:phoneNumber,'%'),'%'))) AND " +
+            "(LOWER(u.email) LIKE LOWER(CONCAT('%',COALESCE(:email,'%'),'%'))) AND " +
+            "(LOWER(u.firstName) LIKE LOWER(CONCAT('%',COALESCE(:firstName,'%'),'%'))) AND " +
+            "(LOWER(u.lastName) LIKE LOWER(CONCAT('%',COALESCE(:lastName,'%'),'%')))")
     List<User> getFiltered(
             String phoneNumber,
             String email,

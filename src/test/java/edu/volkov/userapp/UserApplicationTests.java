@@ -8,11 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 import static edu.volkov.userapp.testdata.UserTestData.*;
 import static org.hamcrest.core.Is.is;
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @AutoConfigureMockMvc
 class UserApplicationTests {
@@ -144,22 +144,6 @@ class UserApplicationTests {
     }
 
     @Test
-    public void getFilteredAllWithoutParam() throws Exception {
-        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
-
-        verifyJsonWithManyUsers(result, USERS_MAP);
-
-        USER_MATCHER.assertMatch(
-                repository.getFiltered(null, null, null, null),
-                USERS_LIST
-        );
-    }
-
-    @Test
     public void getFilteredAllWithBlankParam() throws Exception {
         final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
                 .param("phoneNumber", "")
@@ -176,6 +160,82 @@ class UserApplicationTests {
         USER_MATCHER.assertMatch(
                 repository.getFiltered("", "", "", ""),
                 USERS_LIST
+        );
+    }
+
+    @Test
+    public void getFilteredOneWithUpperParam() throws Exception {
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
+                .param("phoneNumber", USER1.getPhoneNumber().toUpperCase())
+                .param("email", USER1.getEmail().toUpperCase())
+                .param("firstName", USER1.getFirstName().toUpperCase())
+                .param("lastName", USER1.getLastName().toUpperCase()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+
+        verifyJsonWithManyUsers(result, ONE_USER_MAP);
+
+        USER_MATCHER.assertMatch(
+                repository.getFiltered(USER1.getPhoneNumber(), USER1.getEmail(), USER1.getFirstName(), USER1.getLastName()),
+                Arrays.asList(USER1)
+        );
+    }
+
+    @Test
+    public void getFilteredOneWithHalfStringParam() throws Exception {
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
+                .param("phoneNumber", "(111)")
+                .param("email", "asily")
+                .param("firstName", "as")
+                .param("lastName", "van"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+
+        verifyJsonWithManyUsers(result, ONE_USER_MAP);
+
+        USER_MATCHER.assertMatch(
+                repository.getFiltered(USER1.getPhoneNumber(), USER1.getEmail(), USER1.getFirstName(), USER1.getLastName()),
+                Arrays.asList(USER1)
+        );
+    }
+
+    @Test
+    public void getFilteredAllWithoutParam() throws Exception {
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+
+        verifyJsonWithManyUsers(result, USERS_MAP);
+
+        USER_MATCHER.assertMatch(
+                repository.getFiltered(null, null, null, null),
+                USERS_LIST
+        );
+    }
+
+    @Test
+    public void getFilteredNotFound() throws Exception {
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
+                .param("phoneNumber", "1234")
+                .param("email", "")
+                .param("firstName", "")
+                .param("lastName", ""))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+
+        verifyJsonWithManyUsers(result, Collections.emptyMap());
+
+        USER_MATCHER.assertMatch(
+                repository.getFiltered("1234","","",""),
+                Collections.emptyList()
         );
     }
 

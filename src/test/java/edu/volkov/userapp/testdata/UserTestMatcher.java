@@ -3,8 +3,6 @@ package edu.volkov.userapp.testdata;
 import edu.volkov.userapp.model.User;
 
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
