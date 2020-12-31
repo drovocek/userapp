@@ -24,7 +24,7 @@ public class UserTestData {
             "\"page\" : " +
             "{" +
             "\"size\" : 20," +
-            "\"totalElements\" : 10," +
+            "\"totalElements\" : 2," +
             "\"totalPages\" : 1," +
             "\"number\" : 0" +
             "}" +
@@ -75,7 +75,7 @@ public class UserTestData {
     public final static String FILTERED_USERS_HAL_JSON;
 
     static {
-        ALL_USERS_HAL_JSON = getUsersHalJsonString(createUserHalJsonStringsList(10), GET_ALL_FOOTER);
+        ALL_USERS_HAL_JSON = getUsersHalJsonString(createUserHalJsonStringsList(2), GET_ALL_FOOTER);
         FILTERED_USERS_HAL_JSON = getUsersHalJsonString(createUserHalJsonStringsList(1), GET_FILTERED_FOOTER);
     }
 
@@ -100,12 +100,12 @@ public class UserTestData {
     }
 
     public static String getUpdatedUser1HalJson() {
-        String updated = createUserHalJson(12);
-        return updated.replaceAll("/12", "1");
+        String updated = createUserHalJson(3);
+        return updated.replaceAll("/3", "1");
     }
 
     public static String getNewUserHalJson() {
-        return createUserHalJson(13);
+        return createUserHalJson(4);
     }
 
     private static List<String> createUserHalJsonStringsList(int count) {

@@ -22,7 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 //@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-//@Sql(scripts = "classpath:data.sql", config = @SqlConfig(encoding = "UTF-8"))
 @SpringBootTest
 @AutoConfigureMockMvc
 class UserApplicationTests {
@@ -84,12 +83,21 @@ class UserApplicationTests {
     }
 
     @Test
-    public void getFilteredAll() throws Exception {
+    public void getFilteredAllWithEmptyParam() throws Exception {
         this.mockMvc.perform(get("/api/users/search/filter?" +
-                "phoneNumber=" +
-                "email=" +
-                "firstName=" +
+                "phoneNumber=&"+
+                "email=&" +
+                "firstName=&" +
                 "lastName="))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
+                .andExpect(content().json(FILTERED_USERS_HAL_JSON));
+    }
+
+    @Test
+    public void getFilteredAllWithNullParam() throws Exception {
+        this.mockMvc.perform(get("/api/users/search/filter?"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
@@ -161,7 +169,7 @@ class UserApplicationTests {
 
         User created = mapper.readValue(action.andReturn().getResponse().getContentAsString(), User.class);
 
-        User createdFromDb = repository.findById(11).get();
+        User createdFromDb = repository.findById(3).get();
 
         USER_MATCHER.assertMatch(created, newUser);
         USER_MATCHER.assertMatch(createdFromDb, newUser);

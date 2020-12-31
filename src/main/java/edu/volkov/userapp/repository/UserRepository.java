@@ -20,16 +20,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findByLastNameContainingIgnoreCase(String lastName);
 
     @RestResource(rel = "filter", path = "filter")
-//    @Query("SELECT u FROM User u WHERE " +
-//            "u.phoneNumber = :phoneNumber AND " +
-//            "u.email = LOWER(:email) AND " +
-//            "u.firstName =:firstName AND " +
-//            "u.lastName = :lastName")
     @Query("SELECT u FROM User u WHERE " +
-            "(:phoneNumber is null or u.phoneNumber LIKE :phoneNumber) AND " +
-            "(:email is null or u.email LIKE :email) AND " +
-            "(:firstName is null or u.firstName LIKE :firstName) AND " +
-            "(:lastName is null or u.lastName LIKE :lastName)")
+            "(u.phoneNumber LIKE COALESCE(CONCAT('%',:phoneNumber),'%')) AND " +
+            "(u.email LIKE COALESCE(CONCAT('%',:email),'%')) AND " +
+            "(u.firstName LIKE COALESCE(CONCAT('%',:firstName),'%')) AND " +
+            "(u.lastName LIKE COALESCE(CONCAT('%',:lastName),'%'))")
     List<User> getFiltered(
             String phoneNumber,
             String email,
