@@ -21,11 +21,6 @@ public class UserTestMatcher {
         assertion.accept(actual, expected);
     }
 
-    @SafeVarargs
-    public final void assertMatch(Iterable<User> actual, User... expected) {
-        assertMatch(actual, Stream.of(expected).collect(Collectors.toList()));
-    }
-
     public void assertMatch(Iterable<User> actual, Iterable<User> expected) {
         iterableAssertion.accept(actual, expected);
     }

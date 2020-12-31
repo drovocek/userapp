@@ -1,7 +1,10 @@
 package edu.volkov.userapp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.*;
@@ -13,7 +16,7 @@ import javax.validation.constraints.Size;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
 public class User extends AbstractPersistable<Integer> {
@@ -42,6 +45,13 @@ public class User extends AbstractPersistable<Integer> {
     @Override
     public boolean isNew() {
         return super.isNew();
+    }
+
+    public User(User user) {
+        this.phoneNumber = user.getPhoneNumber();
+        this.email = user.getEmail();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
     }
 
     @Override
