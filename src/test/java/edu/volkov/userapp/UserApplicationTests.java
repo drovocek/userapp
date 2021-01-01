@@ -39,14 +39,6 @@ class UserApplicationTests {
 
     private static final String BASE_PATH = "http://localhost/api/users";
 
-    @Test
-    void getReturnsCorrectResponse() throws Exception {
-        USER_MATCHER.assertMatch(repository.findById(USER1_ID).get(), USER1);
-        final ResultActions result = mockMvc.perform(get(BASE_PATH + "/" + USER1_ID));
-        result.andDo(print()).andExpect(status().isOk());
-        verifyJsonWithOneUser(result, USER1, USER1_ID);
-    }
-
     void verifyJsonWithOneUser(final ResultActions action, User user, Integer userId) throws Exception {
         action
                 .andExpect(jsonPath("phoneNumber", is(user.getPhoneNumber())))
@@ -264,6 +256,7 @@ class UserApplicationTests {
         this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
                 .contentType(MediaTypes.HAL_JSON_VALUE)
                 .content(mapper.writeValueAsString(expected)))
+                .andDo(print())
                 .andExpect(status().isNoContent());
 
         User actual = repository.findById(USER1_ID).get();
@@ -276,6 +269,7 @@ class UserApplicationTests {
         this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
                 .contentType(MediaTypes.HAL_JSON_VALUE)
                 .content(mapper.writeValueAsString(USER_WITH_DUPLICATE_EMAIL)))
+                .andDo(print())
                 .andExpect(status().isConflict());
     }
 
@@ -302,10 +296,10 @@ class UserApplicationTests {
         ResultActions action = this.mockMvc.perform(post(BASE_PATH)
                 .contentType(MediaTypes.HAL_JSON_VALUE)
                 .content(mapper.writeValueAsString(newUser)))
+                .andDo(print())
                 .andExpect(status().isCreated());
 
         User created = mapper.readValue(action.andReturn().getResponse().getContentAsString(), User.class);
-
         User createdFromDb = repository.findById(NEW_USER_ID).get();
 
         USER_MATCHER.assertMatch(created, newUser);
@@ -317,6 +311,7 @@ class UserApplicationTests {
         this.mockMvc.perform(post(BASE_PATH)
                 .contentType(MediaTypes.HAL_JSON_VALUE)
                 .content(mapper.writeValueAsString(USER_WITH_DUPLICATE_EMAIL)))
+                .andDo(print())
                 .andExpect(status().isConflict());
     }
 
