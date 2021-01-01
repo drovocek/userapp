@@ -7,13 +7,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 
 import static edu.volkov.userapp.testdata.UserTestData.*;
 import static org.hamcrest.core.Is.is;
@@ -38,6 +41,7 @@ class UserApplicationTests {
     private ObjectMapper mapper;
 
     private static final String BASE_PATH = "http://localhost/api/users";
+    private static final Pageable FIRST_PAGE_WITH_TWO_USERS = PageRequest.of(0, 2);
 
     void verifyJsonWithOneUser(final ResultActions action, User user, Integer userId) throws Exception {
         action
@@ -127,12 +131,20 @@ class UserApplicationTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
+                .andExpect(jsonPath("page.size", is(20)))
+                .andExpect(jsonPath("page.totalElements", is(ONE_USER_MAP.size())))
+                .andExpect(jsonPath("page.totalPages", is(1)))
+                .andExpect(jsonPath("page.number", is(0)));
 
         verifyJsonWithManyUsers(result, ONE_USER_MAP);
 
         USER_MATCHER.assertMatch(
-                repository.getFiltered(USER1.getPhoneNumber(), USER1.getEmail(), USER1.getFirstName(), USER1.getLastName()),
+                repository.getFiltered(
+                        USER1.getPhoneNumber(), USER1.getEmail(),
+                        USER1.getFirstName(), USER1.getLastName(),
+                        FIRST_PAGE_WITH_TWO_USERS
+                ),
                 Arrays.asList(USER1)
         );
     }
@@ -147,12 +159,16 @@ class UserApplicationTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
+                .andExpect(jsonPath("page.size", is(20)))
+                .andExpect(jsonPath("page.totalElements", is(USERS_LIST.size())))
+                .andExpect(jsonPath("page.totalPages", is(1)))
+                .andExpect(jsonPath("page.number", is(0)));
 
         verifyJsonWithManyUsers(result, USERS_MAP);
 
         USER_MATCHER.assertMatch(
-                repository.getFiltered("", "", "", ""),
+                repository.getFiltered("", "", "", "", FIRST_PAGE_WITH_TWO_USERS),
                 USERS_LIST
         );
     }
@@ -167,12 +183,20 @@ class UserApplicationTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
+                .andExpect(jsonPath("page.size", is(20)))
+                .andExpect(jsonPath("page.totalElements", is(ONE_USER_MAP.size())))
+                .andExpect(jsonPath("page.totalPages", is(1)))
+                .andExpect(jsonPath("page.number", is(0)));
 
         verifyJsonWithManyUsers(result, ONE_USER_MAP);
 
         USER_MATCHER.assertMatch(
-                repository.getFiltered(USER1.getPhoneNumber(), USER1.getEmail(), USER1.getFirstName(), USER1.getLastName()),
+                repository.getFiltered(
+                        USER1.getPhoneNumber(), USER1.getEmail(),
+                        USER1.getFirstName(), USER1.getLastName(),
+                        FIRST_PAGE_WITH_TWO_USERS
+                ),
                 Arrays.asList(USER1)
         );
     }
@@ -187,12 +211,20 @@ class UserApplicationTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
+                .andExpect(jsonPath("page.size", is(20)))
+                .andExpect(jsonPath("page.totalElements", is(ONE_USER_MAP.size())))
+                .andExpect(jsonPath("page.totalPages", is(1)))
+                .andExpect(jsonPath("page.number", is(0)));
 
         verifyJsonWithManyUsers(result, ONE_USER_MAP);
 
         USER_MATCHER.assertMatch(
-                repository.getFiltered(USER1.getPhoneNumber(), USER1.getEmail(), USER1.getFirstName(), USER1.getLastName()),
+                repository.getFiltered(
+                        USER1.getPhoneNumber(), USER1.getEmail(),
+                        USER1.getFirstName(), USER1.getLastName(),
+                        FIRST_PAGE_WITH_TWO_USERS
+                ),
                 Arrays.asList(USER1)
         );
     }
@@ -203,12 +235,16 @@ class UserApplicationTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
+                .andExpect(jsonPath("page.size", is(20)))
+                .andExpect(jsonPath("page.totalElements", is(USERS_LIST.size())))
+                .andExpect(jsonPath("page.totalPages", is(1)))
+                .andExpect(jsonPath("page.number", is(0)));
 
         verifyJsonWithManyUsers(result, USERS_MAP);
 
         USER_MATCHER.assertMatch(
-                repository.getFiltered(null, null, null, null),
+                repository.getFiltered(null, null, null, null, FIRST_PAGE_WITH_TWO_USERS),
                 USERS_LIST
         );
     }
@@ -223,12 +259,16 @@ class UserApplicationTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter")));
+                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
+                .andExpect(jsonPath("page.size", is(20)))
+                .andExpect(jsonPath("page.totalElements", is(0)))
+                .andExpect(jsonPath("page.totalPages", is(0)))
+                .andExpect(jsonPath("page.number", is(0)));
 
         verifyJsonWithManyUsers(result, Collections.emptyMap());
 
         USER_MATCHER.assertMatch(
-                repository.getFiltered("1234","","",""),
+                repository.getFiltered("1234", "", "", "", FIRST_PAGE_WITH_TWO_USERS),
                 Collections.emptyList()
         );
     }
