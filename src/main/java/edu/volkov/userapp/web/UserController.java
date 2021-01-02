@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/api/users")
+@RequestMapping("/")
 @AllArgsConstructor
 @Slf4j
 public class UserController {
@@ -36,6 +36,6 @@ public class UserController {
 
     @GetMapping("/")
     public String getUsers() {
-        return "users";
+        return "users2";
     }
 }

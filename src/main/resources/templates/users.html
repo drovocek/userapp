@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="eng">
+
 <head xmlns:th="http://www.thymeleaf.org">
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<!--    <meta name="_csrf" th:content="${_csrf.token}"/>-->
+<!--    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>-->
+
     <title>User App</title>
-<!--    <link rel="stylesheet" th:href="@{/css/style.css}" type="text/css"/>-->
     <script type="text/javascript" th:src="@{/js/act.js}" defer ></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 
     <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.5.3/css/bootstrap.min.css}">
     <link th:rel="stylesheet" th:href="@{/webjars/noty/3.1.4/demo/font-awesome/css/font-awesome.min.css}">
@@ -22,10 +26,10 @@
 
 <body>
 <div>
-    <p class="phoneNumber">The phone number is </p>
-    <p class="email">The email is </p>
-    <p class="firstName">The first name is </p>
-    <p class="lastName">The last name is </p>
+    <p class="phoneNumber1">The phone number is </p>
+    <p class="email1">The email is </p>
+    <p class="firstName1">The first name is </p>
+    <p class="lastName1">The last name is </p>
 </div>
 
 <div class="jumbotron pt-4">
@@ -42,8 +46,8 @@
                 <th>Email</th>
                 <th>First Name</th>
                 <th>Last Name</th>
-                <th></th>
-                <th></th>
+<!--                <th></th>-->
+<!--                <th></th>-->
             </tr>
             </thead>
         </table>
