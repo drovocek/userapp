@@ -1,7 +1,7 @@
 # Test task
 
 ## Completion date 
-31 December 2020 (in progress)
+10 January 2021 (in progress)
 
 ## Theme 
 Test task for getting a job

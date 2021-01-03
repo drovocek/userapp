@@ -1,4 +1,5 @@
 const userAjaxUrl = "http://localhost:8080/api/users";
+var failedNote;
 
 const app = {
     start() {
@@ -10,7 +11,7 @@ const app = {
             }
             ,
             paging: true,
-            info: true,
+            info: false,
             columns: [
                 {
                     title: 'First Name',
@@ -42,13 +43,13 @@ const app = {
             ],
             order: [
                 [
-                    0,
-                    'desc'
+                    3,
+                    'asc'
                 ]
             ]
         });
 
-        $('#save').on('click', this.create.bind(this, dataTable));
+        $('#formButton').on('click', this.createOrUpdate.bind(this, dataTable));
         $('#delete').on('click', this.delete.bind(this, dataTable));
 
         const self = this;
@@ -68,19 +69,36 @@ const app = {
         //     this.addRow(dataTable, data);
         // });
     },
-    create(dataTable) {
-        console.log("createNew start");
+    createOrUpdate(dataTable) {
+        console.log("createOrUpdate start");
+        const dataSet = dataTable.rows('.selected').data()[0];
+        const isEntityHref = (typeof dataSet === "undefined") ? false : app.checkHrefContainsAndValid(dataSet);
+
         $.ajax({
-            type: "POST",
-            url: userAjaxUrl,
+            type: isEntityHref ? "PUT" : "POST",
+            url: isEntityHref ? dataSet._links.user.href : userAjaxUrl,
             data: app.buildRequestBody(),
             contentType: "application/json",
-            success: function (data) {
-                console.log("createNew success");
-                app.addRow(dataTable, data);
-                app.clearForm();
-            }
+        }).done(function (data) {
+            console.log("createOrUpdate success");
+            isEntityHref ? app.rewriteRow(dataTable, data) : app.addRow(dataTable, data);
+            app.clearForm();
+            isEntityHref ? app.successNoty("Record updated") : app.successNoty("Record created");
         });
+    },
+    checkHrefContainsAndValid(dataSet) {
+        console.log("checkHrefContainsAndValid");
+
+        if (typeof dataSet === "undefined" ||
+            typeof dataSet._links === "undefined" ||
+            typeof dataSet._links.user === "undefined" ||
+            dataSet._links.user.href === "undefined"
+        ) return false;
+
+        const splitData = dataSet._links.user.href.split('/');
+        const id = splitData[splitData.length - 1];
+
+        return (userAjaxUrl + '/' + id) === (dataSet._links.user.href);
     },
     delete(dataTable) {
         console.log("delete");
@@ -94,14 +112,15 @@ const app = {
                     type: "DELETE",
                     success: function () {
                         app.removeRow(dataTable);
-                        // successNoty("Record deleted");
+                        app.clearForm();
+                        app.successNoty("Record deleted");
                     }
                 });
             }
         }
     },
     addRow(dataTable, data) {
-        console.log("addRow")
+        console.log("addRow");
 
         const addedRow = dataTable.row.add(data).draw();
         addedRow.show().draw(false);
@@ -110,7 +129,15 @@ const app = {
         console.log(addedRowNode);
         $(addedRowNode).addClass('highlight');
     },
+    rewriteRow(dataTable, data) {
+        console.log("rewriteRow");
+
+        app.removeRow(dataTable);
+        app.addRow(dataTable, data);
+    },
     selectRow(dataTable) {
+        console.log("selectRow");
+
         if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');
             app.clearForm();
@@ -121,6 +148,8 @@ const app = {
         }
     },
     removeRow(dataTable) {
+        console.log("removeRow");
+
         dataTable.row('.selected').remove().draw(false);
     },
     buildRequestBody() {
@@ -130,7 +159,9 @@ const app = {
     },
     clearForm() {
         console.log("clearForm");
-        $('#detailsForm').find("input[type=text],input[type=email],textarea").val("");
+
+        $('#detailsForm').find(":input").val("");
+        app.drawFormDetails(false);
     },
     fillForm(dataTable) {
         console.log("fillForm");
@@ -140,6 +171,41 @@ const app = {
         $('#lastName').val(dataSet.lastName);
         $('#phoneNumber').val(dataSet.phoneNumber);
         $('#email').val(dataSet.email);
+
+        app.drawFormDetails(true);
+    },
+    drawFormDetails(isForUpdate) {
+        console.log("drawFormDetails");
+
+        const formBtn = $('#formButton');
+        const deleteBtn = $('#delete');
+        const formTitle = $('#formTitle');
+
+        formBtn.removeClass((isForUpdate) ? "btn btn-success" : "btn btn-warning");
+        formBtn.addClass((isForUpdate) ? "btn btn-warning" : "btn btn-success");
+        formBtn.html((isForUpdate) ? "Update" : "Create");
+        formTitle.html((isForUpdate) ? "Update User" : "Create User");
+
+        (isForUpdate) ? deleteBtn.show() : deleteBtn.hide();
+    },
+    closeNoty() {
+        if (failedNote) {
+            failedNote.close();
+            failedNote = undefined;
+        }
+    },
+    successNoty(key) {
+        console.log("successNoty");
+
+        app.closeNoty();
+        new Noty({
+            text: "<span class='fa fa-lg fa-check'></span> &nbsp;" + key,
+            type: 'success',
+            // mint, sunset, relax, nest, metroui, semanticui, light, bootstrap-v3, bootstrap-v4
+            theme: 'relax',
+            layout: "bottomRight",
+            timeout: 1000
+        }).show();
     }
 };
 

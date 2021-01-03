@@ -6,65 +6,56 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}" type="text/css"/>
-
+    <link th:rel="stylesheet" th:href="@{/webjars/noty/3.1.4/lib/noty.css}"/>
     <link th:rel="stylesheet" th:href="@{/webjars/noty/3.1.4/demo/font-awesome/css/font-awesome.min.css}">
-    <title>User app</title>
+
+    <title>User Table App</title>
 </head>
 <body>
-<div class="container">
-    <div class="row">
-        <h2 class="text-center">
-            User App Table
-        </h2>
-        <div class="col-md-7">
-            <button class="btn btn-danger" id="delete">
-                <i class="glyphicon glyphicon-remove"></i>
-            </button>
-            <table id="realtime" class="display" width="100%"></table>
-        </div>
-        <div class="col-md-4 col-md-offset-1">
-            <h3 class="text-center">Create New User</h3>
-            <form id="detailsForm">
-                <!--                <input type="hidden" id="id" name="id" th:value="3">-->
+<div class="jumbotron pt-4">
+    <div class="container">
+        <div class="row">
+            <h2 class="text-center">
+                 User Table App
+            </h2>
+            <div class="col-md-7">
+                <table id="realtime" class="display" width="100%"></table>
+            </div>
+            <div class="col-md-4 col-md-offset-1">
+                <h3 class="text-center" id="formTitle">Create New User</h3>
+                <form id="detailsForm">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" name="firstName" id="firstName" placeholder="First Name"
+                               class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" name="lastName" id="lastName" placeholder="Last Name" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone number</label>
+                        <input type="text" name="phoneNumber" id="phoneNumber" placeholder="+x(xxx)xxx-xx-xx"
+                               class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" placeholder="user@email.new" class="form-control">
+                    </div>
+                </form>
                 <div class="form-group">
-                    <label for="firstName">First Name</label>
-                    <input type="text" name="firstName" id="firstName" placeholder="First Name" class="form-control">
+                    <button class="btn btn-success" id="formButton">Create</button>
+                    <button class="btn btn-default" id="clear" onclick="app.clearForm()">Clear</button>
+                    <button class="btn btn-danger pull-right" id="delete" style="display:none">Delete</button>
                 </div>
-                <div class="form-group">
-                    <label for="lastName">Last Name</label>
-                    <input type="text" name="lastName" id="lastName" placeholder="Last Name" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="phoneNumber">Phone number</label>
-                    <input type="text" name="phoneNumber" id="phoneNumber" placeholder="+x(xxx)xxx-xx-xx"
-                           class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" name="email" id="email" placeholder="user@email.new" class="form-control">
-                </div>
-            </form>
-            <div class="form-group">
-                <button class="btn btn-info" id="save">Save</button>
-                <button class="btn btn-warning" id="clear" onclick="app.clearForm()">Clear</button>
             </div>
         </div>
     </div>
 </div>
-<table class="table table-striped" id="example">
-    <thead>
-    <tr>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Phone number</th>
-        <th>Email</th>
-        <!--                <th></th>-->
-        <!--                <th></th>-->
-    </tr>
-    </thead>
-</table>
+
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script type="text/javascript" th:src="@{webjars/jquery-serializejson/2.9.0/jquery.serializejson.js}"></script>
+<script type="text/javascript" th:src="@{/webjars/noty/3.1.4/lib/noty.min.js}" defer></script>
 
 <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>-->
 <!--<script src="https://js.pusher.com/4.1/pusher.min.js"></script>-->
