@@ -1,10 +1,10 @@
-
 var form;
-
 
 function updateTableByData(data) {
     console.log("updateTableByData");
-    ctx.datatableApi.clear().rows.add(data).draw();
+    console.log(data);
+    console.log(data._embedded.users);
+    ctx.datatableApi.clear().rows.add(data._embedded.users).draw();
 }
 
 var userAjaxUrl = "/api/users";
@@ -20,20 +20,19 @@ var ctx = {
 
 function makeEditable(datatableOpts) {
     console.log("makeEditable start");
-    console.log(ctx.datatableApi);
     ctx.datatableApi = $("#datatable").DataTable(
         // https://api.jquery.com/jquery.extend/#jQuery-extend-deep-target-object1-objectN
         $.extend(true, datatableOpts,
             {
                 "ajax": {
                     "url": ctx.ajaxUrl,
-                    "dataSrc": ""
+                    "dataSrc": "_embedded.users"
                 },
                 "paging": false,
                 "info": true
             }
         ));
-    console.log(ctx.datatableApi);
+    console.log(ctx.datatableApi)
     console.log("makeEditable end");
 
     // form = $('#detailsForm');
@@ -45,19 +44,35 @@ function makeEditable(datatableOpts) {
     // $.ajaxSetup({cache: false});
 }
 
-// function renderEditBtn(data, type, row) {
-//     console.log("renderEditBtn")
-//     if (type === "display") {
-//         return "<a onclick='updateRow(" + row.id + ");'><span class='fa fa-pencil'></span></a>";
-//     }
-// }
-//
-// function renderDeleteBtn(data, type, row) {
-//     console.log("renderDeleteBtn")
-//     if (type === "display") {
-//         return "<a onclick='deleteRow(" + row.id + ");'><span class='fa fa-remove'></span></a>";
-//     }
-// }
+function renderEditBtn(data, type, row) {
+    console.log("renderEditBtn")
+    if (type === "display") {
+        return "<a onclick='updateRow(" + row.id + ");'><span class='fa fa-pencil'></span></a>";
+    }
+}
+
+function renderDeleteBtn(data, type) {
+    console.log("renderDeleteBtn")
+    console.log("data " + data)
+    console.log(data.toString());
+    if (type === "display") {
+        return "<a onclick='deleteRow(\"" + data + "\")'><span class='fa fa-remove'></span></a>";
+    }
+}
+
+function deleteRow(link) {
+    console.log("!!!!!!!!!!" + link);
+    if (confirm("Are you sure?")) {
+        $.ajax({
+            url: link,
+            type: "DELETE"
+        })
+            .done(function () {
+                ctx.updateTable();
+                successNoty("Record deleted");
+            });
+    }
+}
 
 $(function () {
     console.log("call makeEditable");
@@ -66,39 +81,28 @@ $(function () {
         "columns": [
             {
                 "data": "phoneNumber",
-                "render": function (data, type, row) {
-                    console.log("1")
-                }
             },
             {
                 "data": "email",
-                "render": function (data, type, row) {
-                    console.log("1")
-                }
             },
             {
                 "data": "firstName",
-                "render": function (data, type, row) {
-                    console.log("1")
-                }
             },
             {
                 "data": "lastName",
-                "render": function (data, type, row) {
-                    console.log("1")
-                }
             }
-            // ,
-            // {
-            //     "render": renderEditBtn,
-            //     "defaultContent": "",
-            //     "orderable": false
-            // },
-            // {
-            //     "render": renderDeleteBtn,
-            //     "defaultContent": "",
-            //     "orderable": false
-            // }
+            ,
+            {
+                "render": renderEditBtn,
+                "defaultContent": "",
+                "orderable": false
+            },
+            {
+                "data": "_links.self.href",
+                "render": renderDeleteBtn,
+                "defaultContent": "",
+                "orderable": false
+            }
         ],
         "order": [
             [
@@ -107,13 +111,36 @@ $(function () {
             ]
         ]
         ,
-        "createdRow": function (row, data, dataIndex) {
-            if (!data.enabled) {
-                $(row).attr("data-userEnabled", false);
+        "columnDefs": [
+            {
+                "targets": [0],
+                "visible": false,
+                "searchable": false
             }
-        }
+        ]
     });
 });
+
+//Noty
+
+var failedNote;
+
+function closeNoty() {
+    if (failedNote) {
+        failedNote.close();
+        failedNote = undefined;
+    }
+}
+
+function successNoty(key) {
+    closeNoty();
+    new Noty({
+        text: "<span class='fa fa-lg fa-check'></span> &nbsp;" + key,
+        type: 'success',
+        layout: "bottomRight",
+        timeout: 1000
+    }).show();
+}
 
 // console.log('Hi')
 // $(document).ready(function () {

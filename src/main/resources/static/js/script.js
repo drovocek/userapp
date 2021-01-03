@@ -1,20 +1,16 @@
 const app = {
     buildForm() {
-        return [
-            $('#name').val(),
-            $('#position').val(),
-            $('#office').val(),
-            $('#extn').val(),
-            $('#startDate')
-                .val()
-                .replace(new RegExp('-', 'g'), '/'),
-            `$${$('#salary').val()}`
-        ];
+        return JSON.stringify($('#detailsForm').serializeJSON());
     },
     sendToServer() {
         const formData = this.buildForm();
-        axios.post('http://localhost:2000/record', formData)
-            .then(response => console.log(response));
+        console.log(formData);
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:8080/api/users",
+            data: formData,
+            contentType: "application/json"
+        }).then(response => console.log(response));
     },
     addRow(dataTable, data) {
         const addedRow = dataTable.row.add(data).draw();
@@ -39,12 +35,10 @@ const app = {
         const dataTable = $('#realtime').DataTable({
             data: dataSet,
             columns: [
-                { title: 'Name' },
-                { title: 'Position' },
-                { title: 'Office' },
-                { title: 'Extn.' },
-                { title: 'Start date' },
-                { title: 'Salary' }
+                { title: 'First Neme' },
+                { title: 'Last Name' },
+                { title: 'Phone Number' },
+                { title: 'Email.' }
             ]
         });
 

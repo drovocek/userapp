@@ -23,16 +23,6 @@ public class User extends AbstractPersistable<Integer> {
 
     @NotBlank
     @Size(max = 128)
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    @Column(name = "email", nullable = false, unique = true)
-    @Email
-    @Size(max = 128)
-    private String email;
-
-    @NotBlank
-    @Size(max = 128)
     @Column(name = "first_name")
     private String firstName;
 
@@ -40,6 +30,16 @@ public class User extends AbstractPersistable<Integer> {
     @Size(max = 128)
     @Column(name = "last_name")
     private String lastName;
+
+    @NotBlank
+    @Size(max = 128)
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "email", nullable = false, unique = true)
+    @Email
+    @Size(max = 128)
+    private String email;
 
     @JsonIgnore
     @Override

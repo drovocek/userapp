@@ -120,6 +120,14 @@
             <artifactId>webjars-locator</artifactId>
             <version>${webjars-locator.version}</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.webjars.npm/jquery-serializejson -->
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>jquery-serializejson</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -1,4 +1,5 @@
-window.dataSet = [
+window.dataSet =
+    [
     [ "Tiger Nixon", "System Architect", "Edinburgh", "5421", "2011/04/25", "$320,800" ],
     [ "Garrett Winters", "Accountant", "Tokyo", "8422", "2011/07/25", "$170,750" ],
     [ "Ashton Cox", "Junior Technical Author", "San Francisco", "1562", "2009/01/12", "$86,000" ],
@@ -36,3 +37,46 @@ window.dataSet = [
     [ "Martena Mccray", "Post-Sales support", "Edinburgh", "8240", "2011/03/09", "$324,050" ],
     [ "Unity Butler", "Marketing Designer", "San Francisco", "5384", "2009/12/09", "$85,675" ]
 ];
+
+$(document).ready(function () {
+    $.ajax({
+        url: "/api/users"
+    })
+    .then(function (data) {
+        var json_data = data._embedded.users;
+        var result = [];
+
+        for(var i in json_data)
+            result.push(Object.values(data._embedded.users[i]));
+
+        console.log(result);
+        console.log(window.dataSet);
+    });
+});
+
+$('#example').dataTable( {
+    "ajax": {
+        "url": "/api/users",
+        // "dataSrc":["Vasily", "Ivanov", "+1 (111) 111-11-11", "vasily@gmail.com"]
+        "dataSrc": "_embedded.users[1]"
+        // "dataSrc": function ( json ) {
+        //     console.log(json)
+        //     console.log(json.data)
+        //     console.log(json._embedded.users[0])
+        //     console.log(json._embedded.users[0].length)
+        //     // for ( var i=0, ien=json._embedded.users[0].length ; i<ien ; i++ ) {
+        //     //     json.data[i][0] = '<a href="/message/'+json._embedded.users[0][i][0]+'>View message</a>';
+        //     // }
+        //     // return json.data;
+        //     // return json._embedded.users[0];
+        //     return "{firstName: \"Vasily\", lastName: \"Ivanov\", phoneNumber: \"+1 (111) 111-11-11\", email: \"vasily@gmail.com\""
+        // }
+        ,
+        "columns": [
+            { "data": "firstName" },
+            { "data": "lastName" },
+            { "data": "phoneNumber" },
+            { "data": "email" }
+        ]
+    }
+} );
