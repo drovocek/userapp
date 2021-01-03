@@ -29,22 +29,64 @@ const app = {
         }
     },
     removeRow(dataTable) {
-        dataTable.row('.selected').remove().draw( false );
+        dataTable.row('.selected').remove().draw(false);
     },
     start() {
         const dataTable = $('#realtime').DataTable({
-            data: dataSet,
+            // data: dataSet,
+            ajax: {
+                url: 'http://localhost:8080/api/users',
+                dataSrc: '_embedded.users'
+            }
+            ,
+            paging: false,
+            info: true,
             columns: [
-                { title: 'First Neme' },
-                { title: 'Last Name' },
-                { title: 'Phone Number' },
-                { title: 'Email.' }
+                {
+                    title: 'First Name',
+                    data: 'firstName'
+                },
+                {
+                    title: 'Last Name',
+                    data: 'lastName'
+                },
+                {
+                    title: 'Phone Number',
+                    data: 'phoneNumber'
+                },
+                {
+                    title: 'Email',
+                    data: 'email'
+                }
+
+                // ,
+                // {
+                //     data: "_links.self.href",
+                //     render: renderDeleteBtn,
+                //     defaultContent: "",
+                //     orderable: false
+                // }
             ]
+            ,
+            order: [
+                [
+                    0,
+                    'desc'
+                ]
+            ]
+            // ,
+            // columnDefs: [
+            //     {
+            //         targets: [0],
+            //         visible: false,
+            //         searchable: false
+            //     }
+            // ]
         });
 
         $('#add').on('click', this.sendToServer.bind(this));
         const self = this;
-        $('#realtime tbody').on('click', 'tr', function(){
+        $('#realtime tbody').on('click', 'tr', function () {
             self.selectRow.bind(this, dataTable)();
         });
         $('#remove').on('click', this.removeRow.bind(this, dataTable));
