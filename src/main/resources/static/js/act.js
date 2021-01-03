@@ -60,19 +60,19 @@ function renderDeleteBtn(data, type) {
     }
 }
 
-function deleteRow(link) {
-    console.log("!!!!!!!!!!" + link);
-    if (confirm("Are you sure?")) {
-        $.ajax({
-            url: link,
-            type: "DELETE"
-        })
-            .done(function () {
-                ctx.updateTable();
-                successNoty("Record deleted");
-            });
-    }
-}
+// function deleteRow(link) {
+//     console.log("!!!!!!!!!!" + link);
+//     if (confirm("Are you sure?")) {
+//         $.ajax({
+//             url: link,
+//             type: "DELETE"
+//         })
+//             .done(function () {
+//                 ctx.updateTable();
+//                 successNoty("Record deleted");
+//             });
+//     }
+// }
 
 $(function () {
     console.log("call makeEditable");
