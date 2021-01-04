@@ -1,4 +1,4 @@
-const userAjaxUrl = "http://localhost:8080/api/users";
+const userAjaxUrl = "/api/users";
 var failedNote;
 
 const app = {
@@ -29,24 +29,14 @@ const app = {
                     title: 'Email',
                     data: 'email'
                 }
-                // {
-                //     title: '',
-                //     render: function renderDeleteBtn(data, type) {
-                //         if (type === "display") {
-                //             console.log("<a class=\"btn btn-danger\" id=\"del\"><span class=\"fa fa-remove\"></span></a>");
-                //             return "<a class=\"btn btn-danger\" id=\"del\"><span class=\"fa fa-remove\"></span></a>";
-                //         }
-                //     },
-                //     defaultContent: "",
-                //     orderable: false
-                // }
             ],
             order: [
                 [
                     3,
                     'asc'
                 ]
-            ]
+            ],
+            responsive: true
         });
 
         $('#formButton').on('click', this.createOrUpdate.bind(this, dataTable));
@@ -56,6 +46,29 @@ const app = {
         $('#realtime tbody').on('click', 'tr', function () {
             self.selectRow.bind(this, dataTable)();
         });
+
+        const sellLayout = '<input class="form-control py-2 border-right-0 border" type="search" placeholder="Search">';
+
+
+        $('#realtime thead tr').clone(true).appendTo('#realtime thead');
+        $('#realtime thead tr:eq(1) th').each(function (i) {
+
+            $(this).html(sellLayout);
+
+            $('input', this).on('keyup change', function () {
+                if (dataTable.column(i).search() !== this.value) {
+                    dataTable
+                        .column(i)
+                        .search(this.value)
+                        .draw();
+                }
+            });
+        });
+
+        // var table = $('#realtime').DataTable({
+        //     orderCellsTop: true,
+        //     fixedHeader: true
+        // });
 
 
         // // Pusher
