@@ -45,10 +45,10 @@ class UserApplicationTests {
 
     void verifyJsonWithOneUser(final ResultActions action, User user, Integer userId) throws Exception {
         action
-                .andExpect(jsonPath("phoneNumber", is(user.getPhoneNumber())))
-                .andExpect(jsonPath("email", is(user.getEmail())))
                 .andExpect(jsonPath("firstName", is(user.getFirstName())))
                 .andExpect(jsonPath("lastName", is(user.getLastName())))
+                .andExpect(jsonPath("phoneNumber", is(user.getPhoneNumber())))
+                .andExpect(jsonPath("email", is(user.getEmail())))
                 .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/" + userId)))
                 .andExpect(jsonPath("_links.user.href", is(BASE_PATH + "/" + userId)));
     }
@@ -58,10 +58,10 @@ class UserApplicationTests {
             try {
                 int i = userId - 1;
                 action
-                        .andExpect(jsonPath("_embedded.users[" + i + "].phoneNumber", is(user.getPhoneNumber())))
-                        .andExpect(jsonPath("_embedded.users[" + i + "].email", is(user.getEmail())))
                         .andExpect(jsonPath("_embedded.users[" + i + "].firstName", is(user.getFirstName())))
                         .andExpect(jsonPath("_embedded.users[" + i + "].lastName", is(user.getLastName())))
+                        .andExpect(jsonPath("_embedded.users[" + i + "].phoneNumber", is(user.getPhoneNumber())))
+                        .andExpect(jsonPath("_embedded.users[" + i + "].email", is(user.getEmail())))
                         .andExpect(jsonPath("_embedded.users[" + i + "]._links.self.href", is(BASE_PATH + "/" + userId)))
                         .andExpect(jsonPath("_embedded.users[" + i + "]._links.user.href", is(BASE_PATH + "/" + userId)));
             } catch (Exception e) {

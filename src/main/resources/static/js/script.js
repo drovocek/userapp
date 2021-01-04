@@ -85,7 +85,9 @@ const app = {
     createOrUpdate(dataTable) {
         console.log("createOrUpdate start");
         const dataSet = dataTable.rows('.selected').data()[0];
-        const isEntityHref = (typeof dataSet === "undefined") ? false : app.checkHrefContainsAndValid(dataSet);
+        console.log(dataSet);
+        const isEntityHref = (typeof dataSet !== "undefined");
+        // const isEntityHref = (typeof dataSet === "undefined") ? false : app.checkHrefContainsAndValid(dataSet);
 
         $.ajax({
             type: isEntityHref ? "PUT" : "POST",
@@ -99,20 +101,20 @@ const app = {
             isEntityHref ? app.successNoty("Record updated") : app.successNoty("Record created");
         });
     },
-    checkHrefContainsAndValid(dataSet) {
-        console.log("checkHrefContainsAndValid");
-
-        if (typeof dataSet === "undefined" ||
-            typeof dataSet._links === "undefined" ||
-            typeof dataSet._links.user === "undefined" ||
-            dataSet._links.user.href === "undefined"
-        ) return false;
-
-        const splitData = dataSet._links.user.href.split('/');
-        const id = splitData[splitData.length - 1];
-
-        return (userAjaxUrl + '/' + id) === (dataSet._links.user.href);
-    },
+    // checkHrefContainsAndValid(dataSet) {
+    //     console.log("checkHrefContainsAndValid");
+    //
+    //     if (typeof dataSet === "undefined" ||
+    //         typeof dataSet._links === "undefined" ||
+    //         typeof dataSet._links.user === "undefined" ||
+    //         dataSet._links.user.href === "undefined"
+    //     ) return false;
+    //
+    //     const splitData = dataSet._links.user.href.split('/');
+    //     const id = splitData[splitData.length - 1];
+    //
+    //     return (app.getContextPath() + userAjaxUrl + id) === (dataSet._links.user.href);
+    // },
     delete(dataTable) {
         console.log("delete");
         const dataSet = dataTable.rows('.selected').data()[0];
@@ -219,6 +221,9 @@ const app = {
             layout: "bottomRight",
             timeout: 1000
         }).show();
+    },
+    getContextPath() {
+        return window.location.pathname;
     }
 };
 
