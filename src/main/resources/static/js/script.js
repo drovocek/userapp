@@ -3,6 +3,8 @@ var failedNote;
 
 const app = {
     start() {
+        console.log("start()");
+
         const dataTable = $('#realtime').DataTable({
             // data: dataSet,
             ajax: {
@@ -83,7 +85,7 @@ const app = {
         // });
     },
     createOrUpdate(dataTable) {
-        console.log("createOrUpdate start");
+        console.log("createOrUpdate start()");
         const dataSet = dataTable.rows('.selected').data()[0];
         console.log(dataSet);
         const isEntityHref = (typeof dataSet !== "undefined");
@@ -94,14 +96,16 @@ const app = {
             url: isEntityHref ? dataSet._links.user.href : userAjaxUrl,
             data: app.buildRequestBody(),
             contentType: "application/json",
-            cache: false
-        }).done(function (data) {
-            console.log("createOrUpdate success");
-            isEntityHref ? app.rewriteRow(dataTable, data) : app.addRow(dataTable, data);
-            app.clearForm();
-            isEntityHref ? app.successNoty("Record updated") : app.successNoty("Record created");
-        }).error(function (jqXHR) {
-            app.failNoty(jqXHR);
+            cache: false,
+            success: function (data) {
+                console.log("createOrUpdate success");
+                isEntityHref ? app.rewriteRow(dataTable, data) : app.addRow(dataTable, data);
+                app.clearForm();
+                isEntityHref ? app.successNoty("Record updated") : app.successNoty("Record created");
+            },
+            error: function (jqXHR) {
+                app.failNoty(jqXHR);
+            }
         })
     },
     // checkHrefContainsAndValid(dataSet) {
@@ -119,7 +123,7 @@ const app = {
     //     return (app.getContextPath() + userAjaxUrl + id) === (dataSet._links.user.href);
     // },
     delete(dataTable) {
-        console.log("delete");
+        console.log("delete()");
         const dataSet = dataTable.rows('.selected').data()[0];
 
         if (typeof dataSet !== "undefined") {
@@ -128,33 +132,37 @@ const app = {
                 $.ajax({
                     url: link,
                     type: "DELETE",
-                    cache: false
-                }).done(function () {
-                    app.removeRow(dataTable);
-                    app.clearForm();
-                    app.successNoty("Record deleted");
-                });
+                    cache: false,
+                    success: function () {
+                        app.removeRow(dataTable);
+                        app.clearForm();
+                        app.successNoty("Record deleted");
+                    },
+                    error: function (jqXHR) {
+                        app.failNoty(jqXHR);
+                    }
+                })
             }
         }
     },
     addRow(dataTable, data) {
-        console.log("addRow");
+        console.log("addRow()");
 
         const addedRow = dataTable.row.add(data).draw();
-        addedRow.show().draw(false);
+        // addedRow.show().draw(false);
 
         const addedRowNode = addedRow.node();
         console.log(addedRowNode);
         $(addedRowNode).addClass('highlight');
     },
     rewriteRow(dataTable, data) {
-        console.log("rewriteRow");
+        console.log("rewriteRow()");
 
         app.removeRow(dataTable);
         app.addRow(dataTable, data);
     },
     selectRow(dataTable) {
-        console.log("selectRow");
+        console.log("selectRow()");
 
         if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');
@@ -166,7 +174,7 @@ const app = {
         }
     },
     removeRow(dataTable) {
-        console.log("removeRow");
+        console.log("removeRow()");
 
         dataTable.row('.selected').remove().draw(false);
     },
@@ -176,13 +184,13 @@ const app = {
         return formData;
     },
     clearForm() {
-        console.log("clearForm");
+        console.log("clearForm()");
 
         $('#detailsForm').find(":input").val("");
         app.drawFormDetails(false);
     },
     fillForm(dataTable) {
-        console.log("fillForm");
+        console.log("fillForm()");
         const dataSet = dataTable.rows('.selected').data()[0];
 
         $('#firstName').val(dataSet.firstName);
@@ -193,7 +201,7 @@ const app = {
         app.drawFormDetails(true);
     },
     drawFormDetails(isForUpdate) {
-        console.log("drawFormDetails");
+        console.log("drawFormDetails()");
 
         const formBtn = $('#formButton');
         const deleteBtn = $('#delete');
@@ -213,7 +221,7 @@ const app = {
         }
     },
     successNoty(key) {
-        console.log("successNoty");
+        console.log("successNoty()");
 
         app.closeNoty();
         new Noty({
@@ -235,7 +243,10 @@ const app = {
         failedNote = new Noty({
             text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + errorInfo.typeMessage + "<br>" + errorInfo.details.join("<br>"),
             type: "error",
-            layout: "bottomRight"
+            // mint, sunset, relax, nest, metroui, semanticui, light, bootstrap-v3, bootstrap-v4
+            theme: 'relax',
+            layout: "bottomRight",
+            timeout: 2000
         }).show();
     },
     getContextPath() {

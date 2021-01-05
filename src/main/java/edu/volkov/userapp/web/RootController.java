@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/")
 @Slf4j
-public class UserController {
+public class RootController {
 
     @GetMapping("/")
     public String getUsers() {

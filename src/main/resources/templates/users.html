@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="eng">
 <head>
-    <!--    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">-->
     <base th:href="@{pageContext.request.contextPath}"/>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" th:href="@{/css/style.css}" type="text/css"/>
-    <link th:rel="stylesheet" th:href="@{/webjars/noty/3.1.4/lib/noty.css}"/>
-    <link th:rel="stylesheet" th:href="@{/webjars/noty/3.1.4/demo/font-awesome/css/font-awesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}" type="text/css"/> <!--+-->
 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> <!--+-->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css"> <!--+-->
+    <link th:rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.css"/> <!--+-->
+    <link th:rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <title>User Table App</title>
 </head>
 <body>
@@ -52,16 +51,14 @@
         </div>
     </div>
 </div>
+<script type="text/javascript" th:src="@{/js/script.js}" defer></script> <!--+-->
 
-<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-<script type="text/javascript" th:src="@{webjars/jquery-serializejson/2.9.0/jquery.serializejson.js}"></script>
-<script type="text/javascript" th:src="@{/webjars/noty/3.1.4/lib/noty.min.js}" defer></script>
-
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> <!--+-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.serializeJSON/3.1.1/jquery.serializejson.min.js"></script> <!--+-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js" defer></script> <!--+-->
+<script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script> <!--+-->
+<!--<script src="https://cdn.datatables.net/plug-ins/1.10.15/api/row().show().js"></script>-->
 <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>-->
 <!--<script src="https://js.pusher.com/4.1/pusher.min.js"></script>-->
-<script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/plug-ins/1.10.15/api/row().show().js"></script>
-<script type="text/javascript" th:src="@{/js/data.js}" defer></script>
-<script type="text/javascript" th:src="@{/js/script.js}" defer></script>
 </body>
 </html>
