@@ -1,3 +1,4 @@
+[![Build Status](https://www.travis-ci.com/drovocek/userapp.svg?branch=master)](https://www.travis-ci.com/drovocek/userapp)
 # Test task
 
 ## Completion date 
