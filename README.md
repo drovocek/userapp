@@ -9,7 +9,10 @@ Test task for getting a job
 ## Technology stack
 - Java 8
 - Spring Boot
-- HSQLDB
+- Spring Data Rest
+- H2
+- Slf4j
+- JQuery, BootStrap
 
 ## Documentation
 html
