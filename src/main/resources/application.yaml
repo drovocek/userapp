@@ -11,10 +11,10 @@ spring:
         id.new_generator_mappings: false
 
   thymeleaf:
-      cache: false
-      enabled: true
-      prefix: classpath:/templates/
-      suffix: .html
+    cache: false
+    enabled: true
+    prefix: classpath:/templates/
+    suffix: .html
 
   datasource:
     # ImMemory
@@ -33,3 +33,5 @@ logging:
   level:
     root: WARN
     edu.volkov.userapp: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %highlight(%-5level) %cyan(%class{50}.%M:%L) - %green(%msg%n)"

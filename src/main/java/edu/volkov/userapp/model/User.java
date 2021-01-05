@@ -21,24 +21,25 @@ import javax.validation.constraints.Size;
 @Table(name = "users")
 public class User extends AbstractPersistable<Integer> {
 
-    @NotBlank
-    @Size(max = 128)
+    @NotBlank(message = "First name must not be empty")
+    @Size(max = 100, message = "First name size must be between 0 and 100")
     @Column(name = "first_name")
     private String firstName;
 
-    @NotBlank
-    @Size(max = 128)
+    @NotBlank(message = "Last name must not be empty")
+    @Size(max = 100, message = "Last name size must be between 0 and 100")
     @Column(name = "last_name")
     private String lastName;
 
-    @NotBlank
-    @Size(max = 128)
+    @NotBlank(message = "Phone number must not be empty")
+    @Size(max = 30, message = "Phone number size must be between 0 and 30")
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @NotBlank(message = "Email must not be empty")
+    @Email(message = "Invalid format of Email")
+    @Size(max = 100, message = "Email size must be between 0 and 100")
     @Column(name = "email", nullable = false, unique = true)
-    @Email
-    @Size(max = 128)
     private String email;
 
     @JsonIgnore

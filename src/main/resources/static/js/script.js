@@ -94,12 +94,15 @@ const app = {
             url: isEntityHref ? dataSet._links.user.href : userAjaxUrl,
             data: app.buildRequestBody(),
             contentType: "application/json",
+            cache: false
         }).done(function (data) {
             console.log("createOrUpdate success");
             isEntityHref ? app.rewriteRow(dataTable, data) : app.addRow(dataTable, data);
             app.clearForm();
             isEntityHref ? app.successNoty("Record updated") : app.successNoty("Record created");
-        });
+        }).error(function (jqXHR) {
+            app.failNoty(jqXHR);
+        })
     },
     // checkHrefContainsAndValid(dataSet) {
     //     console.log("checkHrefContainsAndValid");
@@ -125,11 +128,11 @@ const app = {
                 $.ajax({
                     url: link,
                     type: "DELETE",
-                    success: function () {
-                        app.removeRow(dataTable);
-                        app.clearForm();
-                        app.successNoty("Record deleted");
-                    }
+                    cache: false
+                }).done(function () {
+                    app.removeRow(dataTable);
+                    app.clearForm();
+                    app.successNoty("Record deleted");
                 });
             }
         }
@@ -220,6 +223,19 @@ const app = {
             theme: 'relax',
             layout: "bottomRight",
             timeout: 1000
+        }).show();
+    },
+    failNoty(jqXHR) {
+        console.log("failNoty()");
+        var errorInfo = $.parseJSON(jqXHR.responseText);
+        console.log(errorInfo);
+        console.log(jqXHR);
+        console.log("type: " + errorInfo.type);
+        console.log("detail: " + errorInfo.detail);
+        failedNote = new Noty({
+            text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + errorInfo.typeMessage + "<br>" + errorInfo.details.join("<br>"),
+            type: "error",
+            layout: "bottomRight"
         }).show();
     },
     getContextPath() {

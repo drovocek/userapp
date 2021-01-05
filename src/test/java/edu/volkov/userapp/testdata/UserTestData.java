@@ -17,7 +17,7 @@ public class UserTestData {
     public final static Integer USER_NOT_FOUND_ID = 100;
     public final static User USER1 = new User("Vasily", "Ivanov", "+1 (111) 111-11-11", "vasily@gmail.com");
     public final static User USER_2 = new User("Ivan", "Vasiliev", "+2 (222) 222-22-22", "ivan@gmail.com");
-    public final static User USER_WITH_DUPLICATE_EMAIL = new User("+4 (444) 444-44-44", "ivan@gmail.com", "Kiril", "Kirilov");
+    public final static User USER_WITH_DUPLICATE_EMAIL = new User("Kiril", "Kirilov", "+4 (444) 444-44-44", "ivan@gmail.com");
     public final static Map<Integer, User> ONE_USER_MAP = new HashMap();
     public final static Map<Integer, User> USERS_MAP = new HashMap();
     public final static List<User> USERS_LIST = new ArrayList();

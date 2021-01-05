@@ -7,25 +7,31 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static edu.volkov.userapp.testdata.UserTestData.*;
+import static edu.volkov.userapp.util.exception.ErrorType.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
@@ -86,7 +92,10 @@ class UserApplicationTests {
     void getNotFound() throws Exception {
         this.mockMvc.perform(get(BASE_PATH + "/" + USER_NOT_FOUND_ID))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(DATA_NOT_FOUND.name()));
+
+        assertThrows(NoSuchElementException.class, () -> repository.findById(USER_NOT_FOUND_ID).get());
     }
 
     @Test
@@ -250,7 +259,7 @@ class UserApplicationTests {
     }
 
     @Test
-    public void getFilteredNotFound() throws Exception {
+    public void getFilteredEmptyList() throws Exception {
         final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
                 .param("phoneNumber", "1234")
                 .param("email", "")
@@ -286,7 +295,8 @@ class UserApplicationTests {
     void deleteNotFound() throws Exception {
         this.mockMvc.perform(delete(BASE_PATH + "/" + USER_NOT_FOUND_ID))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(DATA_NOT_FOUND.name()));
     }
 
     @Test
@@ -310,16 +320,26 @@ class UserApplicationTests {
                 .contentType(MediaTypes.HAL_JSON_VALUE)
                 .content(mapper.writeValueAsString(USER_WITH_DUPLICATE_EMAIL)))
                 .andDo(print())
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value(DATA_ERROR.name()));
+
+        assertThrows(DataIntegrityViolationException.class, () -> repository.save(USER_WITH_DUPLICATE_EMAIL));
     }
 
-//    @Test
-//    void updateInvalid() throws Exception {
-//        this.mockMvc.perform(put("/api/users/1")
-//                .contentType(MediaTypes.HAL_JSON_VALUE)
-//                .content(USER_BAD_HAL_JSON))
-//                .andExpect(status().isConflict());
-//    }
+    @Test
+    void updateInvalid() throws Exception {
+        User invalid = new User(USER1);
+        invalid.setPhoneNumber("");
+
+        this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
+                .contentType(MediaTypes.HAL_JSON_VALUE)
+                .content(mapper.writeValueAsString(invalid)))
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(VALIDATION_ERROR.name()));
+
+        assertThrows(ConstraintViolationException.class, () -> repository.save(invalid));
+    }
 
 //    @Test
 //    public void updateHtmlUnsafe() throws Exception {
@@ -352,14 +372,27 @@ class UserApplicationTests {
                 .contentType(MediaTypes.HAL_JSON_VALUE)
                 .content(mapper.writeValueAsString(USER_WITH_DUPLICATE_EMAIL)))
                 .andDo(print())
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value(DATA_ERROR.name()));
+
+        assertThrows(DataIntegrityViolationException.class, () -> repository.save(USER_WITH_DUPLICATE_EMAIL));
     }
 
-//    @Test
-//    void createInvalid() throws Exception {
-//        this.mockMvc.perform(post("/api/users")
-//                .contentType(MediaTypes.HAL_JSON_VALUE)
-//                .content(USER_BAD_HAL_JSON))
-//                .andExpect(status().isConflict());
-//    }
+    @Test
+    void createInvalid() throws Exception {
+        User invalid = new User(USER1);
+        invalid.setFirstName("");
+        invalid.setLastName("");
+        invalid.setPhoneNumber("");
+        invalid.setEmail("");
+
+        this.mockMvc.perform(post(BASE_PATH)
+                .contentType(MediaTypes.HAL_JSON_VALUE)
+                .content(mapper.writeValueAsString(invalid)))
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(VALIDATION_ERROR.name()));
+
+        assertThrows(ConstraintViolationException.class, () -> repository.save(invalid));
+    }
 }
