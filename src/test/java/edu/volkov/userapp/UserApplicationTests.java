@@ -11,6 +11,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
+@Sql(scripts = "classpath:data.sql", config = @SqlConfig(encoding = "UTF-8"))
 class UserApplicationTests {
 
     @Autowired
@@ -328,7 +331,10 @@ class UserApplicationTests {
     @Test
     void updateInvalid() throws Exception {
         User invalid = new User(USER1);
+        invalid.setFirstName("");
+        invalid.setLastName("");
         invalid.setPhoneNumber("");
+        invalid.setEmail("");
 
         this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
                 .contentType(MediaTypes.HAL_JSON_VALUE)
@@ -339,6 +345,24 @@ class UserApplicationTests {
 
         assertThrows(ConstraintViolationException.class, () -> repository.save(invalid));
     }
+
+//    @Test
+//    void createInvalid() throws Exception {
+//        User invalid = new User(USER1);
+//        invalid.setFirstName("");
+//        invalid.setLastName("");
+//        invalid.setPhoneNumber("");
+//        invalid.setEmail("");
+//
+//        this.mockMvc.perform(post(BASE_PATH)
+//                .contentType(MediaTypes.HAL_JSON_VALUE)
+//                .content(mapper.writeValueAsString(invalid)))
+//                .andDo(print())
+//                .andExpect(status().isUnprocessableEntity())
+//                .andExpect(jsonPath("$.type").value(VALIDATION_ERROR.name()));
+//
+//        assertThrows(ConstraintViolationException.class, () -> repository.save(invalid));
+//    }
 
 //    @Test
 //    public void updateHtmlUnsafe() throws Exception {

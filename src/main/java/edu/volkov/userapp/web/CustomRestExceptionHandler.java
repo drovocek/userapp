@@ -17,8 +17,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static edu.volkov.userapp.util.exception.ErrorType.*;
 
@@ -57,7 +59,9 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleAll(Exception ex, HttpServletRequest req) {
         log.info("\n<<handleAll>>");
-
+        log.info("\n" + ex.toString());
+        log.info("\n" + Arrays.toString(ex.getSuppressed()));
+        Stream.of(ex.getStackTrace()).forEach(System.out::println);
         return getApiError(req, APP_ERROR, "Some unknown shit");
     }
 

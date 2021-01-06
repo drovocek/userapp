@@ -30,7 +30,7 @@ public class UserTestData {
         USERS_LIST.add(USER_2);
     }
 
-    public static User getNew(){
+    public static User getNew() {
         return new User("Marina", "Ivanova", "+3 (333) 333-33-33", "marina@gmail.com");
     }
 }

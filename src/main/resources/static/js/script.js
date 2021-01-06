@@ -43,6 +43,7 @@ const app = {
 
         $('#formButton').on('click', this.createOrUpdate.bind(this, dataTable));
         $('#delete').on('click', this.delete.bind(this, dataTable));
+        $('#clear').on('click', this.clearForm);
 
         const self = this;
         $('#realtime tbody').on('click', 'tr', function () {
@@ -185,7 +186,7 @@ const app = {
     },
     clearForm() {
         console.log("clearForm()");
-
+        $('.selected').removeClass('selected');
         $('#detailsForm').find(":input").val("");
         app.drawFormDetails(false);
     },
@@ -235,11 +236,11 @@ const app = {
     },
     failNoty(jqXHR) {
         console.log("failNoty()");
-        var errorInfo = $.parseJSON(jqXHR.responseText);
+        const errorInfo = $.parseJSON(jqXHR.responseText);
         console.log(errorInfo);
         console.log(jqXHR);
         console.log("type: " + errorInfo.type);
-        console.log("detail: " + errorInfo.detail);
+        console.log("details: " + errorInfo.details);
         failedNote = new Noty({
             text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + errorInfo.typeMessage + "<br>" + errorInfo.details.join("<br>"),
             type: "error",
