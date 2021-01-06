@@ -347,24 +347,6 @@ class UserApplicationTests {
     }
 
 //    @Test
-//    void createInvalid() throws Exception {
-//        User invalid = new User(USER1);
-//        invalid.setFirstName("");
-//        invalid.setLastName("");
-//        invalid.setPhoneNumber("");
-//        invalid.setEmail("");
-//
-//        this.mockMvc.perform(post(BASE_PATH)
-//                .contentType(MediaTypes.HAL_JSON_VALUE)
-//                .content(mapper.writeValueAsString(invalid)))
-//                .andDo(print())
-//                .andExpect(status().isUnprocessableEntity())
-//                .andExpect(jsonPath("$.type").value(VALIDATION_ERROR.name()));
-//
-//        assertThrows(ConstraintViolationException.class, () -> repository.save(invalid));
-//    }
-
-//    @Test
 //    public void updateHtmlUnsafe() throws Exception {
 //        this.mockMvc.perform(put("/api/users/1")
 //                .contentType(MediaTypes.HAL_JSON_VALUE)

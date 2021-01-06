@@ -236,8 +236,13 @@ const app = {
     },
     failNoty(jqXHR) {
         console.log("failNoty()");
-        const errorInfo = $.parseJSON(jqXHR.responseText);
-        console.log(errorInfo);
+        const serverErrMsg = {
+            url: "",
+            type: "SERVER_ERROR",
+            typeMessage: "Server error",
+            details: ["Server disconnect"]
+        };
+        const errorInfo = (typeof jqXHR.responseText === "undefined") ? serverErrMsg : $.parseJSON(jqXHR.responseText);
         console.log(jqXHR);
         console.log("type: " + errorInfo.type);
         console.log("details: " + errorInfo.details);

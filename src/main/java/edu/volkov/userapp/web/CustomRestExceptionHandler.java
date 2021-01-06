@@ -11,16 +11,13 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import static edu.volkov.userapp.util.exception.ErrorType.*;
 
@@ -28,7 +25,7 @@ import static edu.volkov.userapp.util.exception.ErrorType.*;
 @ControllerAdvice(basePackageClasses = RepositoryRestExceptionHandler.class)
 //@RestControllerAdvice(annotations = RestController.class)
 @Slf4j
-public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
+public class CustomRestExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleResourceNotFound(HttpServletRequest req) {
@@ -59,10 +56,13 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleAll(Exception ex, HttpServletRequest req) {
         log.info("\n<<handleAll>>");
-        log.info("\n" + ex.toString());
-        log.info("\n" + Arrays.toString(ex.getSuppressed()));
-        Stream.of(ex.getStackTrace()).forEach(System.out::println);
-        return getApiError(req, APP_ERROR, "Some unknown shit");
+
+        try {
+            ConstraintViolationException exx = (ConstraintViolationException) ex.getCause().getCause();
+            return handleConstraintViolation(exx, req);
+        } catch (Exception e) {
+            return getApiError(req, APP_ERROR, "Some unknown shit");
+        }
     }
 
     private ResponseEntity<ApiError> getApiError(HttpServletRequest req, ErrorType errorType, String... details) {
