@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.MediaTypes;
@@ -48,7 +49,7 @@ class UserApplicationTests {
     private static final String BASE_PATH = "http://localhost/api/users";
     private static final Pageable FIRST_PAGE_WITH_TWO_USERS = PageRequest.of(0, 2);
 
-    void verifyJsonWithOneUser(final ResultActions action, User user, Integer userId) throws Exception {
+    private void verifyJsonWithOneUser(final ResultActions action, User user, Integer userId) throws Exception {
         action
                 .andExpect(jsonPath("firstName", is(user.getFirstName())))
                 .andExpect(jsonPath("lastName", is(user.getLastName())))
@@ -58,7 +59,7 @@ class UserApplicationTests {
                 .andExpect(jsonPath("_links.user.href", is(BASE_PATH + "/" + userId)));
     }
 
-    void verifyJsonWithManyUsers(final ResultActions action, Map<Integer, User> usersById) throws Exception {
+    private void verifyJsonWithManyUsers(final ResultActions action, Map<Integer, User> usersById) throws Exception {
         usersById.forEach((userId, user) -> {
             try {
                 int i = userId - 1;
@@ -296,6 +297,8 @@ class UserApplicationTests {
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.type").value(DATA_NOT_FOUND.name()));
+
+        assertThrows(EmptyResultDataAccessException.class, () -> repository.deleteById(USER_NOT_FOUND_ID));
     }
 
     @Test

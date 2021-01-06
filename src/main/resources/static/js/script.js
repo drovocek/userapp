@@ -9,56 +9,56 @@ const app = {
             // data: dataSet,
             ajax: {
                 url: userAjaxUrl,
-                dataSrc: '_embedded.users'
+                dataSrc: "_embedded.users"
             }
             ,
             paging: true,
             info: false,
             columns: [
                 {
-                    title: 'First Name',
-                    data: 'firstName'
+                    title: "First Name",
+                    data: "firstName"
                 },
                 {
-                    title: 'Last Name',
-                    data: 'lastName'
+                    title: "Last Name",
+                    data: "lastName"
                 },
                 {
-                    title: 'Phone Number',
-                    data: 'phoneNumber'
+                    title: "Phone Number",
+                    data: "phoneNumber"
                 },
                 {
-                    title: 'Email',
-                    data: 'email'
+                    title: "Email",
+                    data: "email"
                 }
             ],
             order: [
                 [
                     3,
-                    'asc'
+                    "asc"
                 ]
             ],
             responsive: true
         });
 
-        $('#formButton').on('click', this.createOrUpdate.bind(this, dataTable));
-        $('#delete').on('click', this.delete.bind(this, dataTable));
-        $('#clear').on('click', this.clearForm);
+        $('#formButton').on("click", this.createOrUpdate.bind(this, dataTable));
+        $('#delete').on("click", this.delete.bind(this, dataTable));
+        $('#clear').on("click", this.clearForm);
 
         const self = this;
-        $('#realtime tbody').on('click', 'tr', function () {
+        $('#realtime tbody').on("click", "tr", function () {
             self.selectRow.bind(this, dataTable)();
         });
 
         const sellLayout = '<input class="form-control py-2 border-right-0 border" type="search" placeholder="Search">';
 
 
-        $('#realtime thead tr').clone(true).appendTo('#realtime thead');
-        $('#realtime thead tr:eq(1) th').each(function (i) {
+        $("#realtime thead tr").clone(true).appendTo("#realtime thead");
+        $("#realtime thead tr:eq(1) th").each(function (i) {
 
             $(this).html(sellLayout);
 
-            $('input', this).on('keyup change', function () {
+            $("input", this).on("keyup change", function () {
                 if (dataTable.column(i).search() !== this.value) {
                     dataTable
                         .column(i)
@@ -154,7 +154,7 @@ const app = {
 
         const addedRowNode = addedRow.node();
         console.log(addedRowNode);
-        $(addedRowNode).addClass('highlight');
+        $(addedRowNode).addClass("highlight");
     },
     rewriteRow(dataTable, data) {
         console.log("rewriteRow()");
@@ -165,34 +165,34 @@ const app = {
     selectRow(dataTable) {
         console.log("selectRow()");
 
-        if ($(this).hasClass('selected')) {
-            $(this).removeClass('selected');
+        if ($(this).hasClass("selected")) {
+            $(this).removeClass("selected");
             app.clearForm();
         } else {
-            dataTable.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
+            dataTable.$("tr.selected").removeClass("selected");
+            $(this).addClass("selected");
             app.fillForm(dataTable);
         }
     },
     removeRow(dataTable) {
         console.log("removeRow()");
 
-        dataTable.row('.selected').remove().draw(false);
+        dataTable.row(".selected").remove().draw(false);
     },
     buildRequestBody() {
-        const formData = JSON.stringify($('#detailsForm').serializeJSON());
+        const formData = JSON.stringify($("#detailsForm").serializeJSON());
         console.log("buildRequestBody: " + formData);
         return formData;
     },
     clearForm() {
         console.log("clearForm()");
-        $('.selected').removeClass('selected');
-        $('#detailsForm').find(":input").val("");
+        $(".selected").removeClass("selected");
+        $("#detailsForm").find(":input").val("");
         app.drawFormDetails(false);
     },
     fillForm(dataTable) {
         console.log("fillForm()");
-        const dataSet = dataTable.rows('.selected').data()[0];
+        const dataSet = dataTable.rows(".selected").data()[0];
 
         $('#firstName').val(dataSet.firstName);
         $('#lastName').val(dataSet.lastName);
@@ -204,9 +204,9 @@ const app = {
     drawFormDetails(isForUpdate) {
         console.log("drawFormDetails()");
 
-        const formBtn = $('#formButton');
-        const deleteBtn = $('#delete');
-        const formTitle = $('#formTitle');
+        const formBtn = $("#formButton");
+        const deleteBtn = $("#delete");
+        const formTitle = $("#formTitle");
 
         formBtn.removeClass((isForUpdate) ? "btn btn-success" : "btn btn-warning");
         formBtn.addClass((isForUpdate) ? "btn btn-warning" : "btn btn-success");
@@ -227,9 +227,9 @@ const app = {
         app.closeNoty();
         new Noty({
             text: "<span class='fa fa-lg fa-check'></span> &nbsp;" + key,
-            type: 'success',
+            type: "success",
             // mint, sunset, relax, nest, metroui, semanticui, light, bootstrap-v3, bootstrap-v4
-            theme: 'relax',
+            theme: "relax",
             layout: "bottomRight",
             timeout: 1000
         }).show();
@@ -250,7 +250,7 @@ const app = {
             text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + errorInfo.typeMessage + "<br>" + errorInfo.details.join("<br>"),
             type: "error",
             // mint, sunset, relax, nest, metroui, semanticui, light, bootstrap-v3, bootstrap-v4
-            theme: 'relax',
+            theme: "relax",
             layout: "bottomRight",
             timeout: 2000
         }).show();
