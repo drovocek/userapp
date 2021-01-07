@@ -1,8 +1,9 @@
 package edu.volkov.userapp.web;
 
-import edu.volkov.userapp.model.Greeting;
-import edu.volkov.userapp.model.HIMessage;
 import edu.volkov.userapp.model.User;
+import edu.volkov.userapp.to.PackageType;
+import edu.volkov.userapp.to.UserTo;
+import edu.volkov.userapp.to.UserUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -10,11 +11,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -81,8 +79,9 @@ public class UserSocketController extends AbstractUserController {
 
     @MessageMapping("/users/update")
     @SendTo("/topic/greetings")
-    public User update(User user) throws BindException {
-        return updateUser(user, user.getId());
+    public UserTo update(User user) throws BindException {
+        User userFromDb = updateUser(user, user.getId());
+        return UserUtil.asTo(userFromDb, PackageType.UPDATE);
     }
 
     @MessageMapping("/users/getByMail")

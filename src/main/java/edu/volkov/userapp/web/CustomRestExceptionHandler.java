@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,17 +15,18 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import static edu.volkov.userapp.util.exception.ErrorType.*;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@ControllerAdvice(basePackageClasses = RepositoryRestExceptionHandler.class)
+@ControllerAdvice
 //@RestControllerAdvice(annotations = RestController.class)
 @Slf4j
 public class CustomRestExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
+    @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ApiError> handleResourceNotFound(HttpServletRequest req) {
         log.info("\n<<handleResourceNotFound>>");
         return getApiError(req, DATA_NOT_FOUND, "Unknown entity");

@@ -1,4 +1,5 @@
 var stompClient = null;
+const greetPanel = $("#greetings");
 
 function setConnected(connected) {
     console.log("setConnected(connected): " + connected);
@@ -6,8 +7,7 @@ function setConnected(connected) {
     $("#disconnect").prop("disabled", !connected);
     if (connected) {
         $("#conversation").show();
-    }
-    else {
+    } else {
         $("#conversation").hide();
     }
     $("#greetings").html("");
@@ -24,9 +24,38 @@ function connect() {
         stompClient.subscribe('/topic/greetings', function (greeting) {
             console.log("RESPONSE");
             console.log(greeting.body);
-            showGreeting(JSON.parse(greeting.body).id);
+            // showGreeting(JSON.parse(greeting.body).email);
+            const greetBody = JSON.parse(greeting.body);
+            switch (greetBody.packageType) {
+                case 'GET':
+                    showGet(greetBody);
+                    break;
+                case 'GET_ALL':
+                    showGetAll(greetBody);
+                    break;
+                case 'UPDATE':
+                    showUpdate(greetBody);
+                    break;
+                case 'CREATE':
+                    showCreate(greetBody);
+                    break;
+                case 'DELETE':
+                    showDelete(greetBody);
+                    break;
+                default:
+                    alert('NO RESPONSE TYPE');
+            }
         });
     });
+}
+
+function showUpdate(greetBody) {
+    console.log("showUpdate()");
+    greetPanel.append("<tr><td>" + greetBody.id + "</td></tr>");
+    greetPanel.append("<tr><td>" + greetBody.firstName + "</td></tr>");
+    greetPanel.append("<tr><td>" + greetBody.lastName + "</td></tr>");
+    greetPanel.append("<tr><td>" + greetBody.phoneNumber + "</td></tr>");
+    greetPanel.append("<tr><td>" + greetBody.email + "</td></tr>");
 }
 
 function disconnect() {
@@ -44,8 +73,15 @@ function sendName() {
 
     console.log("stompClient: " + stompClient);
     // stompClient.send("/app/hello", {}, JSON.stringify({'name': $("#name").val()}));
-    stompClient.send("/app/users/get", {},
-        JSON.stringify({'id': "1", 'firstName':"",'lastName':"",'phoneNumber':"",'email':""}));
+    stompClient.send("/app/users/update", {},
+        // JSON.stringify({'id': "1", 'firstName':"",'lastName':"",'phoneNumber':"",'email':""}));
+        JSON.stringify({
+            'id': "1",
+            'firstName': "newFirstName",
+            'lastName': "newLastName",
+            'phoneNumber': "9 (999) 999-99-99",
+            'email': "andrey@gmail.com"
+        }));
 }
 
 function showGreeting(message) {
@@ -61,15 +97,18 @@ $(function () {
         e.preventDefault();
     });
 
-    $( "#connect" ).click(function() {
+    $("#connect").click(function () {
         console.log("START connect()");
-        connect(); });
+        connect();
+    });
 
-    $( "#disconnect" ).click(function() {
+    $("#disconnect").click(function () {
         console.log("START disconnect()");
-        disconnect(); });
+        disconnect();
+    });
 
-    $( "#send" ).click(function() {
+    $("#send").click(function () {
         console.log("START sendName()");
-        sendName(); });
+        sendName();
+    });
 });

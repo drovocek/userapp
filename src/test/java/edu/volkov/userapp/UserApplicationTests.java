@@ -11,11 +11,12 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.TransactionSystemException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.Arrays;
@@ -54,9 +55,7 @@ class UserApplicationTests {
                 .andExpect(jsonPath("firstName", is(user.getFirstName())))
                 .andExpect(jsonPath("lastName", is(user.getLastName())))
                 .andExpect(jsonPath("phoneNumber", is(user.getPhoneNumber())))
-                .andExpect(jsonPath("email", is(user.getEmail())))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/" + userId)))
-                .andExpect(jsonPath("_links.user.href", is(BASE_PATH + "/" + userId)));
+                .andExpect(jsonPath("email", is(user.getEmail())));
     }
 
     private void verifyJsonWithManyUsers(final ResultActions action, Map<Integer, User> usersById) throws Exception {
@@ -64,12 +63,10 @@ class UserApplicationTests {
             try {
                 int i = userId - 1;
                 action
-                        .andExpect(jsonPath("_embedded.users[" + i + "].firstName", is(user.getFirstName())))
-                        .andExpect(jsonPath("_embedded.users[" + i + "].lastName", is(user.getLastName())))
-                        .andExpect(jsonPath("_embedded.users[" + i + "].phoneNumber", is(user.getPhoneNumber())))
-                        .andExpect(jsonPath("_embedded.users[" + i + "].email", is(user.getEmail())))
-                        .andExpect(jsonPath("_embedded.users[" + i + "]._links.self.href", is(BASE_PATH + "/" + userId)))
-                        .andExpect(jsonPath("_embedded.users[" + i + "]._links.user.href", is(BASE_PATH + "/" + userId)));
+                        .andExpect(jsonPath("[" + i + "].firstName", is(user.getFirstName())))
+                        .andExpect(jsonPath("[" + i + "].lastName", is(user.getLastName())))
+                        .andExpect(jsonPath("[" + i + "].phoneNumber", is(user.getPhoneNumber())))
+                        .andExpect(jsonPath("[" + i + "].email", is(user.getEmail())));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -81,7 +78,7 @@ class UserApplicationTests {
         final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/" + USER1_ID))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
 
         verifyJsonWithOneUser(result, USER1, USER1_ID);
 
@@ -100,11 +97,11 @@ class UserApplicationTests {
 
     @Test
     void getByEmail() throws Exception {
-        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/by-email")
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/by")
                 .param("email", USER1.getEmail()))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
 
         verifyJsonWithOneUser(result, USER1, USER1_ID);
 
@@ -116,14 +113,7 @@ class UserApplicationTests {
         final ResultActions result = this.mockMvc.perform(get(BASE_PATH))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH)))
-                .andExpect(jsonPath("_links.profile.href", is("http://localhost/api/profile/users")))
-                .andExpect(jsonPath("_links.search.href", is(BASE_PATH + "/search")))
-                .andExpect(jsonPath("page.size", is(20)))
-                .andExpect(jsonPath("page.totalElements", is(USERS_MAP.size())))
-                .andExpect(jsonPath("page.totalPages", is(1)))
-                .andExpect(jsonPath("page.number", is(0)));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
 
         verifyJsonWithManyUsers(result, USERS_MAP);
 
@@ -132,154 +122,104 @@ class UserApplicationTests {
 
     @Test
     public void getFilteredOne() throws Exception {
-        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
+                .param("pageNumber", "0")
+                .param("pageSize", "20")
                 .param("phoneNumber", USER1.getPhoneNumber())
                 .param("email", USER1.getEmail())
                 .param("firstName", USER1.getFirstName())
                 .param("lastName", USER1.getLastName()))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
-                .andExpect(jsonPath("page.size", is(20)))
-                .andExpect(jsonPath("page.totalElements", is(ONE_USER_MAP.size())))
-                .andExpect(jsonPath("page.totalPages", is(1)))
-                .andExpect(jsonPath("page.number", is(0)));
-
-        verifyJsonWithManyUsers(result, ONE_USER_MAP);
-
-        USER_MATCHER.assertMatch(
-                repository.getFiltered(
-                        USER1.getPhoneNumber(), USER1.getEmail(),
-                        USER1.getFirstName(), USER1.getLastName(),
-                        FIRST_PAGE_WITH_TWO_USERS
-                ),
-                Arrays.asList(USER1)
-        );
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("size", is(20)))
+                .andExpect(jsonPath("totalElements", is(ONE_USER_MAP.size())))
+                .andExpect(jsonPath("totalPages", is(1)))
+                .andExpect(jsonPath("number", is(0)));
     }
 
     @Test
     public void getFilteredAllWithBlankParam() throws Exception {
-        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
+                .param("pageNumber", "0")
+                .param("pageSize", "20")
                 .param("phoneNumber", "")
                 .param("email", "")
                 .param("firstName", "")
                 .param("lastName", ""))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
-                .andExpect(jsonPath("page.size", is(20)))
-                .andExpect(jsonPath("page.totalElements", is(USERS_LIST.size())))
-                .andExpect(jsonPath("page.totalPages", is(1)))
-                .andExpect(jsonPath("page.number", is(0)));
-
-        verifyJsonWithManyUsers(result, USERS_MAP);
-
-        USER_MATCHER.assertMatch(
-                repository.getFiltered("", "", "", "", FIRST_PAGE_WITH_TWO_USERS),
-                USERS_LIST
-        );
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("size", is(20)))
+                .andExpect(jsonPath("totalElements", is(USERS_LIST.size())))
+                .andExpect(jsonPath("totalPages", is(1)))
+                .andExpect(jsonPath("number", is(0)));
     }
 
     @Test
     public void getFilteredOneWithUpperParam() throws Exception {
-        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
+                .param("pageNumber", "0")
+                .param("pageSize", "20")
                 .param("phoneNumber", USER1.getPhoneNumber().toUpperCase())
                 .param("email", USER1.getEmail().toUpperCase())
                 .param("firstName", USER1.getFirstName().toUpperCase())
                 .param("lastName", USER1.getLastName().toUpperCase()))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
-                .andExpect(jsonPath("page.size", is(20)))
-                .andExpect(jsonPath("page.totalElements", is(ONE_USER_MAP.size())))
-                .andExpect(jsonPath("page.totalPages", is(1)))
-                .andExpect(jsonPath("page.number", is(0)));
-
-        verifyJsonWithManyUsers(result, ONE_USER_MAP);
-
-        USER_MATCHER.assertMatch(
-                repository.getFiltered(
-                        USER1.getPhoneNumber(), USER1.getEmail(),
-                        USER1.getFirstName(), USER1.getLastName(),
-                        FIRST_PAGE_WITH_TWO_USERS
-                ),
-                Arrays.asList(USER1)
-        );
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("size", is(20)))
+                .andExpect(jsonPath("totalElements", is(ONE_USER_MAP.size())))
+                .andExpect(jsonPath("totalPages", is(1)))
+                .andExpect(jsonPath("number", is(0)));
     }
 
     @Test
     public void getFilteredOneWithHalfStringParam() throws Exception {
-        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
+                .param("pageNumber", "0")
+                .param("pageSize", "20")
                 .param("phoneNumber", "(111)")
                 .param("email", "asily")
                 .param("firstName", "as")
                 .param("lastName", "van"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
-                .andExpect(jsonPath("page.size", is(20)))
-                .andExpect(jsonPath("page.totalElements", is(ONE_USER_MAP.size())))
-                .andExpect(jsonPath("page.totalPages", is(1)))
-                .andExpect(jsonPath("page.number", is(0)));
-
-        verifyJsonWithManyUsers(result, ONE_USER_MAP);
-
-        USER_MATCHER.assertMatch(
-                repository.getFiltered(
-                        USER1.getPhoneNumber(), USER1.getEmail(),
-                        USER1.getFirstName(), USER1.getLastName(),
-                        FIRST_PAGE_WITH_TWO_USERS
-                ),
-                Arrays.asList(USER1)
-        );
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("size", is(20)))
+                .andExpect(jsonPath("totalElements", is(ONE_USER_MAP.size())))
+                .andExpect(jsonPath("totalPages", is(1)))
+                .andExpect(jsonPath("number", is(0)));
     }
 
     @Test
     public void getFilteredAllWithoutParam() throws Exception {
-        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter"))
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
-                .andExpect(jsonPath("page.size", is(20)))
-                .andExpect(jsonPath("page.totalElements", is(USERS_LIST.size())))
-                .andExpect(jsonPath("page.totalPages", is(1)))
-                .andExpect(jsonPath("page.number", is(0)));
-
-        verifyJsonWithManyUsers(result, USERS_MAP);
-
-        USER_MATCHER.assertMatch(
-                repository.getFiltered(null, null, null, null, FIRST_PAGE_WITH_TWO_USERS),
-                USERS_LIST
-        );
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("size", is(20)))
+                .andExpect(jsonPath("totalElements", is(USERS_LIST.size())))
+                .andExpect(jsonPath("totalPages", is(1)))
+                .andExpect(jsonPath("number", is(0)));
     }
 
     @Test
     public void getFilteredEmptyList() throws Exception {
-        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/search/filter")
+        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
+                .param("pageNumber", "0")
+                .param("pageSize", "20")
                 .param("phoneNumber", "1234")
                 .param("email", "")
                 .param("firstName", "")
                 .param("lastName", ""))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("_links.self.href", is(BASE_PATH + "/search/filter?page=0&size=20")))
-                .andExpect(jsonPath("page.size", is(20)))
-                .andExpect(jsonPath("page.totalElements", is(0)))
-                .andExpect(jsonPath("page.totalPages", is(0)))
-                .andExpect(jsonPath("page.number", is(0)));
-
-        verifyJsonWithManyUsers(result, Collections.emptyMap());
-
-        USER_MATCHER.assertMatch(
-                repository.getFiltered("1234", "", "", "", FIRST_PAGE_WITH_TWO_USERS),
-                Collections.emptyList()
-        );
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("size", is(20)))
+                .andExpect(jsonPath("totalElements", is(0)))
+                .andExpect(jsonPath("totalPages", is(0)))
+                .andExpect(jsonPath("number", is(0)));
     }
 
     @Test
@@ -303,13 +243,13 @@ class UserApplicationTests {
 
     @Test
     void update() throws Exception {
-        User expected = getNew();
+        User expected = getUpdated();
 
         this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
-                .contentType(MediaTypes.HAL_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(expected)))
                 .andDo(print())
-                .andExpect(status().isNoContent());
+                .andExpect(status().isCreated());
 
         User actual = repository.findById(USER1_ID).get();
 
@@ -319,7 +259,7 @@ class UserApplicationTests {
     @Test
     void updateDuplicateEmail() throws Exception {
         this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
-                .contentType(MediaTypes.HAL_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(USER_WITH_DUPLICATE_EMAIL)))
                 .andDo(print())
                 .andExpect(status().isConflict())
@@ -337,13 +277,13 @@ class UserApplicationTests {
         invalid.setEmail("");
 
         this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
-                .contentType(MediaTypes.HAL_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(invalid)))
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.type").value(VALIDATION_ERROR.name()));
 
-        assertThrows(ConstraintViolationException.class, () -> repository.save(invalid));
+        assertThrows(TransactionSystemException.class, () -> repository.save(invalid));
     }
 
 //    @Test
@@ -359,7 +299,7 @@ class UserApplicationTests {
         User newUser = getNew();
 
         ResultActions action = this.mockMvc.perform(post(BASE_PATH)
-                .contentType(MediaTypes.HAL_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(newUser)))
                 .andDo(print())
                 .andExpect(status().isCreated());
@@ -374,7 +314,7 @@ class UserApplicationTests {
     @Test
     void createDuplicateEmail() throws Exception {
         this.mockMvc.perform(post(BASE_PATH)
-                .contentType(MediaTypes.HAL_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(USER_WITH_DUPLICATE_EMAIL)))
                 .andDo(print())
                 .andExpect(status().isConflict())
@@ -385,14 +325,14 @@ class UserApplicationTests {
 
     @Test
     void createInvalid() throws Exception {
-        User invalid = new User(USER1);
+        User invalid = getNew();
         invalid.setFirstName("");
         invalid.setLastName("");
         invalid.setPhoneNumber("");
         invalid.setEmail("");
 
         this.mockMvc.perform(post(BASE_PATH)
-                .contentType(MediaTypes.HAL_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(invalid)))
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())

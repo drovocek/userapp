@@ -56,14 +56,8 @@ public class User implements Persistable<Integer>, Serializable {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    public User(String firstName, String lastName, String phoneNumber, String email) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
-    }
-
     public User(User user) {
+        this.id = user.getId();
         this.phoneNumber = user.getPhoneNumber();
         this.email = user.getEmail();
         this.firstName = user.getFirstName();
