@@ -13,13 +13,14 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 @Access(AccessType.FIELD)
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
-public class User implements Persistable<Integer> {
+public class User implements Persistable<Integer>, Serializable {
 
     @Getter
     @Id
