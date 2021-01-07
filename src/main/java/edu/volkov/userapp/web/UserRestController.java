@@ -37,7 +37,7 @@ public class UserRestController extends AbstractUserController implements Repres
 
     @GetMapping
     public CollectionModel<EntityModel<User>> getAll() {
-        return ASSEMBLER.toCollectionModel(findAll());
+        return ASSEMBLER.toCollectionModel(getAllUsers());
     }
 
     @GetMapping("/filter")
@@ -49,18 +49,17 @@ public class UserRestController extends AbstractUserController implements Repres
             String firstName,
             String lastName
     ) {
-        log.info("\n << getFiltered for pageNumber: {} and pageSize: {} >>", pageNumber, pageSize);
-        return ASSEMBLER.toCollectionModel(getFilteredBy(pageNumber, pageSize, email, phoneNumber, firstName, lastName));
+        return ASSEMBLER.toCollectionModel(getFilteredUsers(pageNumber, pageSize, email, phoneNumber, firstName, lastName));
     }
 
     @GetMapping("/{id}")
     public EntityModel<User> get(@PathVariable int id) {
-        return ASSEMBLER.toModel(findById(id));
+        return ASSEMBLER.toModel(getUser(id));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntityModel<User>> create(@RequestBody User user) {
-        User created = createNew(user);
+        User created = createUser(user);
         URI uriOfNewResource = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path(REST_URL)
                 .build().toUri();
@@ -70,18 +69,18 @@ public class UserRestController extends AbstractUserController implements Repres
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int id) {
-        super.delete(id);
+        deleteUser(id);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@RequestBody User user, @PathVariable int id) throws BindException {
-        super.update(user, id);
+        updateUser(user, id);
     }
 
     @GetMapping("/by")
     public EntityModel<User> getByMail(@RequestParam String email) {
-        User user = super.findByEmailIgnoreCase(email);
+        User user = super.getUserByEmail(email);
         return ASSEMBLER.toModel(user);
     }
 

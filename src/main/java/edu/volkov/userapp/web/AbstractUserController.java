@@ -23,12 +23,12 @@ public abstract class AbstractUserController {
     @Autowired
     private UserRepository repository;
 
-    public Iterable<User> findAll() {
+    public Iterable<User> getAllUsers() {
         log.info("\n << getAll >>");
         return repository.findAll();
     }
 
-    public Page<User> getFilteredBy(
+    public Page<User> getFilteredUsers(
             Integer pageNumber,
             Integer pageSize,
             String email,
@@ -41,31 +41,31 @@ public abstract class AbstractUserController {
         return repository.getFiltered(email, phoneNumber, firstName, lastName, pageable);
     }
 
-    public User findById(int id) {
+    public User getUser(int id) {
         log.info("\n << get by id: {} >>", id);
         User user = repository.findById(id).orElse(null);
         if (user == null) throw new NoSuchElementException("no user by id: " + id);
         return user;
     }
 
-    public User createNew(User user) {
+    public User createUser(User user) {
         log.info("\n << create: {} >>", user);
         return repository.save(user);
     }
 
-    public void delete(int id) {
+    public void deleteUser(int id) {
         log.info("\n << get by id: {} >>", id);
         if (repository.delete(id) != 0) {
             throw new NoSuchElementException("no user by id: " + id);
         }
     }
 
-    public void update(User user, int id) throws BindException {
+    public User updateUser(User user, int id) throws BindException {
         log.info("\n << update {} with id={} >>", user, id);
-        repository.save(user);
+        return repository.save(user);
     }
 
-    public User findByEmailIgnoreCase(String email) {
+    public User getUserByEmail(String email) {
         log.info("\n << get by email: {} >>", email);
         User user = repository.findByEmailIgnoreCase(email).orElse(null);
         if (user == null) {
