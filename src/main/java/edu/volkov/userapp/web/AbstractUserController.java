@@ -20,10 +20,9 @@ public abstract class AbstractUserController {
     @Autowired
     private UserRepository repository;
 
-    public List<User> getAllUsers() {
+    public Iterable<User> getAllUsers() {
         log.info("\n << getAll >>");
-        return StreamSupport.stream(repository.findAll().spliterator(), false)
-                .collect(Collectors.toList());
+        return repository.findAll();
     }
 
     public Page<User> getFilteredUsers(
@@ -63,6 +62,13 @@ public abstract class AbstractUserController {
         log.info("\n << delete by id: {} >>", id);
         if (repository.delete(id) == 0) {
             throw new NoSuchElementException("no user by id: " + id);
+        }
+    }
+
+    public void deleteSocketUser(User user) {
+        log.info("\n << delete user: {} >>", user);
+        if (repository.deleteSocket(user) == 0) {
+            throw new NoSuchElementException("no user: " + user);
         }
     }
 

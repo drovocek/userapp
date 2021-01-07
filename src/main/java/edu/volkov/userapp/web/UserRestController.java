@@ -10,9 +10,10 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping(value = UserRestController.REST_URL, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -23,7 +24,8 @@ public class UserRestController extends AbstractUserController {
 
     @GetMapping
     public List<User> getAll() {
-        return getAllUsers();
+        return StreamSupport.stream(getAllUsers().spliterator(), false)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/filter")

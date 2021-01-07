@@ -50,9 +50,24 @@ const restApi = {
 }
 
 var stompClient = null;
-const greetPanel = $("#greetings");
 
 const socketApi = {
+    createOrUpdate() {
+        console.log("createOrUpdate start()");
+        const data = $.parseJSON(viewApi.buildRequestBody());
+
+        console.log("data: " + data);
+        console.log("data.id: " + data.id);
+        if (data.id === "") {
+            stompClient.send("/app/users/create", {}, viewApi.buildRequestBody());
+        } else {
+            stompClient.send("/app/users/update", {}, viewApi.buildRequestBody());
+        }
+    },
+    delete() {
+        console.log("delete start()");
+        stompClient.send("/app/users/delete", {}, viewApi.buildRequestBody());
+    },
     setConnected(connected) {
         console.log("setConnected(connected): " + connected);
         $("#connect").prop("disabled", connected);
@@ -64,7 +79,7 @@ const socketApi = {
         }
         $("#greetings").html("");
     },
-    connect() {
+    connect(dataTable) {
         console.log("connect()");
         var socket = new SockJS('/gs-guide-websocket');
         console.log("socket: " + socket);
@@ -78,24 +93,33 @@ const socketApi = {
                 // showGreeting(JSON.parse(greeting.body).email);
                 const greetBody = JSON.parse(greeting.body);
                 switch (greetBody.packageType) {
-                    case 'GET':
-                        socketApi.showGet(greetBody);
-                        break;
-                    case 'GET_ALL':
-                        socketApi.showGetAll(greetBody);
-                        break;
+                    // case 'GET':
+                    //     socketApi.showGet(greetBody);
+                    //     break;
+                    // case 'GET_ALL':
+                    //     socketApi.showGetAll(greetBody);
+                    //     break;
                     case 'UPDATE':
-                        socketApi.showUpdate(greetBody);
+                        console.log("Update success: " + greetBody);
+                        viewApi.addRow(dataTable, greetBody);
+                        viewApi.removeRow(dataTable);
                         break;
                     case 'CREATE':
-                        socketApi.showCreate(greetBody);
+                        console.log("Create success: " + greetBody);
+                        viewApi.addRow(dataTable, greetBody);
                         break;
                     case 'DELETE':
-                        socketApi.showDelete(greetBody);
+                        console.log("Delete success: " + greetBody);
+                        viewApi.removeRow(dataTable);
+                        break;
+                    case 'ERROR':
+                        console.log("Error: " + greetBody);
+                        viewApi.failNoty(greetBody);
                         break;
                     default:
                         alert('NO RESPONSE TYPE');
                 }
+                viewApi.clearForm();
             });
         });
     },
@@ -119,17 +143,17 @@ const socketApi = {
     sendName() {
         console.log("sendName()");
 
-        console.log("stompClient: " + stompClient);
-        // stompClient.send("/app/hello", {}, JSON.stringify({'name': $("#name").val()}));
         stompClient.send("/app/users/update", {},
             // JSON.stringify({'id': "1", 'firstName':"",'lastName':"",'phoneNumber':"",'email':""}));
-            JSON.stringify({
-                'id': "1",
-                'firstName': "newFirstName",
-                'lastName': "newLastName",
-                'phoneNumber': "9 (999) 999-99-99",
-                'email': "andrey@gmail.com"
-            }));
+            // JSON.stringify({
+            //     'id': "1",
+            //     'firstName': "newFirstName",
+            //     'lastName': "newLastName",
+            //     'phoneNumber': "9 (999) 999-99-99",
+            //     'email': "andrey@gmail.com"
+            // })
+            viewApi.buildRequestBody()
+        );
     },
     showGreeting(message) {
         console.log("showGreeting()");
@@ -144,10 +168,10 @@ $(function () {
         e.preventDefault();
     });
 
-    $("#connect").click(function () {
-        console.log("START connect()");
-        socketApi.connect();
-    });
+    // $("#connect").click(function () {
+    //     console.log("START connect()");
+    //     socketApi.connect();
+    // });
 
     $("#disconnect").click(function () {
         console.log("START disconnect()");
@@ -199,8 +223,11 @@ const viewApi = {
             responsive: true
         });
 
-        $('#formButton').on("click", restApi.createOrUpdate.bind(this, dataTable));
-        $('#delete').on("click", restApi.delete.bind(this, dataTable));
+        // $('#formButton').on("click", restApi.createOrUpdate.bind(this, dataTable));
+        // $('#delete').on("click", restApi.delete.bind(this, dataTable));
+        $('#formButton').on("click", socketApi.createOrUpdate.bind(this, dataTable));
+        $('#delete').on("click", socketApi.delete.bind(this, dataTable));
+        socketApi.connect(dataTable);
         $('#clear').on("click", this.clearForm);
 
         const self = this;
@@ -248,6 +275,7 @@ const viewApi = {
     },
     removeRow(dataTable) {
         console.log("removeRow()");
+        console.log("dataTable: " + dataTable);
 
         dataTable.row(".selected").remove().draw(false);
     },

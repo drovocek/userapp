@@ -19,6 +19,11 @@ public interface UserRepository extends PagingAndSortingRepository<User, Integer
     @Query("DELETE FROM User u WHERE u.id=:id")
     int delete(@Param("id") int id);
 
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM User u WHERE u=:user")
+    int deleteSocket(@Param("user") User user);
+
     @Query("SELECT u FROM User u WHERE u.email = LOWER(:email)")
     Optional<User> findByEmailIgnoreCase(String email);
 

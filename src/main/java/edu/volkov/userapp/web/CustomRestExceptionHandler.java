@@ -1,5 +1,6 @@
 package edu.volkov.userapp.web;
 
+import edu.volkov.userapp.to.PackageType;
 import edu.volkov.userapp.util.exception.ApiError;
 import edu.volkov.userapp.util.exception.ErrorType;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +72,7 @@ public class CustomRestExceptionHandler {
                         req.getRequestURL(),
                         errorType,
                         errorType.getErrorCode(),
+                        PackageType.ERROR,
                         details != null ? details : new String[0])
                 );
     }

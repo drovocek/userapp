@@ -40,8 +40,9 @@ public class UserSocketController extends AbstractUserController {
 
     @MessageMapping("/users/getAll")
     @SendTo("/topic/greetings")
-    public List<User> getAll() {
+    public List<UserTo> getAll() {
         return StreamSupport.stream(getAllUsers().spliterator(), false)
+                .map(u -> UserUtil.asTo(u, PackageType.GET_ALL))
                 .collect(Collectors.toList());
     }
 
@@ -60,21 +61,21 @@ public class UserSocketController extends AbstractUserController {
 
     @MessageMapping("/users/get")
     @SendTo("/topic/greetings")
-    public User get(int id) {
-        return getUser(id);
+    public UserTo get(int id) {
+        return UserUtil.asTo(getUser(id), PackageType.GET);
     }
 
     @MessageMapping("/users/create")
     @SendTo("/topic/greetings")
-    public User create(User user) {
-        return createUser(user);
+    public UserTo create(User user) {
+        return UserUtil.asTo(createUser(user), PackageType.CREATE);
     }
 
     @MessageMapping("/users/delete")
     @SendTo("/topic/greetings")
-    public Integer delete(int id) {
-        deleteUser(id);
-        return id;
+    public UserTo delete(User user) {
+        deleteSocketUser(user);
+        return UserUtil.asTo(user, PackageType.DELETE);
     }
 
     @MessageMapping("/users/update")
