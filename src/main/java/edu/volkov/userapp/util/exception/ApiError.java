@@ -1,6 +1,6 @@
 package edu.volkov.userapp.util.exception;
 
-import edu.volkov.userapp.to.PackageType;
+import edu.volkov.userapp.util.PackageType;
 import lombok.Getter;
 
 @Getter

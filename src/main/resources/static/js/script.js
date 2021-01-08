@@ -87,7 +87,7 @@ const socketApi = {
         stompClient.connect({}, function (frame) {
             socketApi.setConnected(true);
             console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/greetings', function (greeting) {
+            stompClient.subscribe('/topic/users', function (greeting) {
                 console.log("RESPONSE");
                 console.log(greeting.body);
                 // showGreeting(JSON.parse(greeting.body).email);
@@ -189,11 +189,11 @@ const viewApi = {
         console.log("start()");
 
         const dataTable = $('#realtime').DataTable({
-            ajax: {
-                url: userAjaxUrl,
-                dataSrc: ""
-            }
-            ,
+            // ajax: {
+            //     url: userAjaxUrl,
+            //     dataSrc: ""
+            // }
+            data: stompClient.send("/users/getAll",{},""),
             paging: true,
             info: false,
             columns: [

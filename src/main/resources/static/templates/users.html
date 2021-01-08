@@ -14,42 +14,6 @@
 <div class="jumbotron pt-4">
     <div class="container">
         <div class="row">
-            <div class="col-md-6">
-                <form class="form-inline">
-                    <div class="form-group">
-                        <label for="connect">WebSocket connection:</label>
-                        <button id="connect" class="btn btn-default" type="submit">Connect</button>
-                        <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="col-md-6">
-                <form class="form-inline">
-                    <div class="form-group">
-                        <label for="name">What is your name?</label>
-                        <input type="text" id="name" class="form-control" placeholder="Your name here...">
-                    </div>
-                    <button id="send" class="btn btn-default" type="submit">Send</button>
-                </form>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <table id="conversation" class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th>Greetings</th>
-                    </tr>
-                    </thead>
-                    <tbody id="greetings">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="container">
-        <div class="row">
             <h2 class="text-center">
                 User Table App
             </h2>
@@ -60,7 +24,7 @@
                 <h3 class="text-center" id="formTitle">Create User</h3>
                 <form id="detailsForm">
                     <div class="form-group">
-                        <input  type="hidden" id="id" name="id" class="form-control">
+                        <input type="hidden" id="id" name="id" class="form-control">
                     </div>
                     <div class="form-group">
                         <label for="firstName">First Name</label>
@@ -90,8 +54,7 @@
         </div>
     </div>
 </div>
-<script type="text/javascript" th:src="@{/js/script.js}" defer></script>
-<!--<script type="text/javascript" th:src="@{/js/app.js}" defer></script>-->
+<script type="text/javascript" th:src="@{/js/script2.js}" defer></script>
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script type="text/javascript"
