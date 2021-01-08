@@ -1,63 +1,13 @@
-const userAjaxUrl = "/api/users";
-var failedNote;
-
-const restApi = {
-    createOrUpdate(dataTable) {
-        console.log("createOrUpdate start()");
-        const dataSet = dataTable.rows('.selected').data()[0];
-        const isHasId = (typeof dataSet !== "undefined");
-
-        $.ajax({
-            type: isHasId ? "PUT" : "POST",
-            url: userAjaxUrl + ((isHasId) ? "/" + dataSet.id : ""),
-            data: viewApi.buildRequestBody(),
-            contentType: "application/json",
-            cache: false,
-            success: function (data) {
-                console.log("createOrUpdate success: " + data);
-                viewApi.addRow(dataTable, data);
-                if (isHasId) viewApi.removeRow(dataTable);
-                viewApi.clearForm();
-                isHasId ? viewApi.successNoty("Record updated") : viewApi.successNoty("Record created");
-            },
-            error: function (jqXHR) {
-                viewApi.failNoty(jqXHR);
-            }
-        })
-    },
-    delete(dataTable) {
-        console.log("delete()");
-        const dataSet = dataTable.rows('.selected').data()[0];
-
-        if (typeof dataSet !== "undefined") {
-            if (confirm("Are you sure?")) {
-                $.ajax({
-                    url: userAjaxUrl + "/" + dataSet.id,
-                    type: "DELETE",
-                    cache: false,
-                    success: function () {
-                        viewApi.removeRow(dataTable);
-                        viewApi.clearForm();
-                        viewApi.successNoty("Record deleted");
-                    },
-                    error: function (jqXHR) {
-                        viewApi.failNoty(jqXHR);
-                    }
-                })
-            }
-        }
-    }
-}
-
 var stompClient = null;
+var dataTable = null;
 
 const socketApi = {
     createOrUpdate() {
-        console.log("createOrUpdate start()");
+        console.log("<< createOrUpdate() >>");//LOG
         const data = $.parseJSON(viewApi.buildRequestBody());
 
-        console.log("data: " + data);
-        console.log("data.id: " + data.id);
+        console.log("data: " + data);//LOG
+        console.log("data.id: " + data.id);//LOG
         if (data.id === "") {
             stompClient.send("/app/users/create", {}, viewApi.buildRequestBody());
         } else {
@@ -65,138 +15,80 @@ const socketApi = {
         }
     },
     delete() {
-        console.log("delete start()");
-        stompClient.send("/app/users/delete", {}, viewApi.buildRequestBody());
+        console.log("<< delete() >>");//LOG
+        stompClient.send("/app/users/delete", {}, $("#id").val());
     },
-    setConnected(connected) {
-        console.log("setConnected(connected): " + connected);
-        $("#connect").prop("disabled", connected);
-        $("#disconnect").prop("disabled", !connected);
-        if (connected) {
-            $("#conversation").show();
-        } else {
-            $("#conversation").hide();
-        }
-        $("#greetings").html("");
-    },
-    connect(dataTable) {
-        console.log("connect()");
+    connect(callback) {
+        console.log("<< connect() >>"); //LOG
         var socket = new SockJS('/gs-guide-websocket');
-        console.log("socket: " + socket);
+        console.log("socket: " + socket);//LOG
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
-            socketApi.setConnected(true);
-            console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/users', function (greeting) {
-                console.log("RESPONSE");
-                console.log(greeting.body);
-                // showGreeting(JSON.parse(greeting.body).email);
-                const greetBody = JSON.parse(greeting.body);
-                switch (greetBody.packageType) {
-                    // case 'GET':
-                    //     socketApi.showGet(greetBody);
-                    //     break;
-                    // case 'GET_ALL':
-                    //     socketApi.showGetAll(greetBody);
-                    //     break;
-                    case 'UPDATE':
-                        console.log("Update success: " + greetBody);
-                        viewApi.addRow(dataTable, greetBody);
-                        viewApi.removeRow(dataTable);
-                        break;
-                    case 'CREATE':
-                        console.log("Create success: " + greetBody);
-                        viewApi.addRow(dataTable, greetBody);
-                        break;
-                    case 'DELETE':
-                        console.log("Delete success: " + greetBody);
-                        viewApi.removeRow(dataTable);
-                        break;
-                    case 'ERROR':
-                        console.log("Error: " + greetBody);
-                        viewApi.failNoty(greetBody);
-                        break;
-                    default:
-                        alert('NO RESPONSE TYPE');
-                }
-                viewApi.clearForm();
+            console.log('Connected: ' + frame);//LOG
+
+            stompClient.subscribe('/topic/users/init', function (userPackage) {
+                const packageBody = JSON.parse(userPackage.body);
+                socketApi.doActionByPackageType(packageBody);
+                stompClient.unsubscribe("initTableData");
+            }, {id: "initTableData"});
+
+
+            stompClient.subscribe('/topic/users', function (userPackage) {
+                const packageBody = JSON.parse(userPackage.body);
+                socketApi.doActionByPackageType(packageBody);
             });
+
+            callback();
         });
     },
-    disconnect() {
-        console.log("disconnect()");
-
-        if (stompClient !== null) {
-            stompClient.disconnect();
+    doActionByPackageType(packageBody) {
+        switch (packageBody.packageType) {
+            case 'GET_ALL':
+                console.log('packageType: GET_ALL');//LOG
+                viewApi.printTable(packageBody.users);
+                break;
+            case 'DELETE':
+                console.log('packageType: DELETE');//LOG
+                viewApi.removeRow(dataTable, packageBody.users[0].id);
+                break;
+            case 'UPDATE':
+                console.log('packageType: UPDATE');//LOG
+                viewApi.addRow(dataTable, packageBody.users[0]);
+                viewApi.removeRow(dataTable, packageBody.users[0].id);
+                break;
+            case 'CREATE':
+                console.log('packageType: CREATE');//LOG
+                viewApi.addRow(dataTable, packageBody.users[0]);
+                break;
+            // case 'GET':
+            //     console.log('packageType: GET');//LOG
+            //     viewApi.addRow(dataTable, packageBody.users[0]);
+            //     break;
+            // case 'ERROR':
+            //     console.log('packageType: ERROR');//LOG
+            //     viewApi.failNoty(packageBody);
+            //     break;
+            default:
+                console.log('packageType: none');//LOG
+                alert('NO RESPONSE TYPE');
         }
-        socketApi.setConnected(false);
-        console.log("Disconnected");
-    },
-    showUpdate(greetBody) {
-        console.log("showUpdate()");
-        greetPanel.append("<tr><td>" + greetBody.id + "</td></tr>");
-        greetPanel.append("<tr><td>" + greetBody.firstName + "</td></tr>");
-        greetPanel.append("<tr><td>" + greetBody.lastName + "</td></tr>");
-        greetPanel.append("<tr><td>" + greetBody.phoneNumber + "</td></tr>");
-        greetPanel.append("<tr><td>" + greetBody.email + "</td></tr>");
-    },
-    sendName() {
-        console.log("sendName()");
-
-        stompClient.send("/app/users/update", {},
-            // JSON.stringify({'id': "1", 'firstName':"",'lastName':"",'phoneNumber':"",'email':""}));
-            // JSON.stringify({
-            //     'id': "1",
-            //     'firstName': "newFirstName",
-            //     'lastName': "newLastName",
-            //     'phoneNumber': "9 (999) 999-99-99",
-            //     'email': "andrey@gmail.com"
-            // })
-            viewApi.buildRequestBody()
-        );
-    },
-    showGreeting(message) {
-        console.log("showGreeting()");
-
-        $("#greetings").append("<tr><td>" + message + "</td></tr>");
+        viewApi.clearForm();
     }
 }
-$(function () {
-    console.log("START");
-    $("form").on('submit', function (e) {
-        console.log("START preventDefault()");
-        e.preventDefault();
-    });
-
-    // $("#connect").click(function () {
-    //     console.log("START connect()");
-    //     socketApi.connect();
-    // });
-
-    $("#disconnect").click(function () {
-        console.log("START disconnect()");
-        socketApi.disconnect();
-    });
-
-    $("#send").click(function () {
-        console.log("START sendName()");
-        socketApi.sendName();
-    });
-});
 
 const viewApi = {
     initTableView() {
-        console.log("start()");
+        console.log("<< initTableView() >>");//LOG
 
-        const dataTable = $('#realtime').DataTable({
-            // ajax: {
-            //     url: userAjaxUrl,
-            //     dataSrc: ""
-            // }
-            data: stompClient.send("/users/getAll",{},""),
+        dataTable = $('#realtime').DataTable({
             paging: true,
             info: false,
+            responsive: true,
             columns: [
+                {
+                    title: "Id",
+                    data: "id"
+                },
                 {
                     title: "First Name",
                     data: "firstName"
@@ -220,17 +112,20 @@ const viewApi = {
                     "asc"
                 ]
             ],
-            responsive: true
+            columnDefs: [
+                {
+                    targets: [0],
+                    visible: false,
+                    searchable: true
+                }
+            ]
         });
 
-        // $('#formButton').on("click", restApi.createOrUpdate.bind(this, dataTable));
-        // $('#delete').on("click", restApi.delete.bind(this, dataTable));
         $('#formButton').on("click", socketApi.createOrUpdate.bind(this, dataTable));
         $('#delete').on("click", socketApi.delete.bind(this, dataTable));
-        socketApi.connect(dataTable);
-        $('#clear').on("click", this.clearForm);
+        $('#clear').on("click", viewApi.clearForm);
 
-        const self = this;
+        const self = viewApi;
         $('#realtime tbody').on("click", "tr", function () {
             self.selectRow.bind(this, dataTable)();
         });
@@ -251,18 +146,35 @@ const viewApi = {
                 }
             });
         });
+        stompClient.send("/app/users/getAll", {}, "");
+    },
+    printTable(usersArray) {
+        console.log("<< printTable() >>");//LOG
+        dataTable.rows.add(usersArray).draw();
     },
     addRow(dataTable, data) {
-        console.log("addRow()");
-        console.log("data: " + data);
-        const addedRow = dataTable.row.add(data).draw();
+        console.log("<< addRow() >>");//LOG
+        const addedRow = dataTable.row.add(data).draw(false);
 
         const addedRowNode = addedRow.node();
         console.log(addedRowNode);
         $(addedRowNode).addClass("highlight");
     },
+    removeRow(dataTable, id) {
+        console.log("<< removeRow() >>");//LOG
+
+        var rowIndexes = [];
+        dataTable.rows(function (idx, data, node) {
+            if (data.id === parseInt(id)) {
+                rowIndexes.push(idx);
+            }
+            return false;
+        });
+
+        dataTable.row(rowIndexes[0]).remove().draw(false);
+    },
     selectRow(dataTable) {
-        console.log("selectRow()");
+        console.log("<< selectRow() >>");//LOG
 
         if ($(this).hasClass("selected")) {
             $(this).removeClass("selected");
@@ -273,24 +185,17 @@ const viewApi = {
             viewApi.fillForm(dataTable);
         }
     },
-    removeRow(dataTable) {
-        console.log("removeRow()");
-        console.log("dataTable: " + dataTable);
-
-        dataTable.row(".selected").remove().draw(false);
-    },
     clearForm() {
-        console.log("clearForm()");
+        console.log("<< clearForm() >>");//LOG
         $(".selected").removeClass("selected");
         $("#detailsForm").find(":input").val("");
         viewApi.drawFormDetails(false);
     },
     fillForm(dataTable) {
-        console.log("fillForm()");
+        console.log("<< fillForm() >>");//LOG
         const dataSet = dataTable.rows(".selected").data()[0];
 
         $('#id').val(dataSet.id);
-        console.log(dataSet.id);
         $('#firstName').val(dataSet.firstName);
         $('#lastName').val(dataSet.lastName);
         $('#phoneNumber').val(dataSet.phoneNumber);
@@ -299,32 +204,35 @@ const viewApi = {
         this.drawFormDetails(true);
     },
     drawFormDetails(isForUpdate) {
-        console.log("drawFormDetails()");
+        console.log("<< drawFormDetails() >>");//LOG
 
         const formBtn = $("#formButton");
         const deleteBtn = $("#delete");
         const formTitle = $("#formTitle");
 
-        formBtn.removeClass((isForUpdate) ? "btn btn-success" : "btn btn-warning");
-        formBtn.addClass((isForUpdate) ? "btn btn-warning" : "btn btn-success");
-        formBtn.html((isForUpdate) ? "Update" : "Create");
+        formBtn.removeClass((isForUpdate) ? "btn btn-success" : "btn btn-warning")
+            .addClass((isForUpdate) ? "btn btn-warning" : "btn btn-success")
+            .html((isForUpdate) ? "Update" : "Create");
+
         formTitle.html((isForUpdate) ? "Update User" : "Create User");
 
         (isForUpdate) ? deleteBtn.show() : deleteBtn.hide();
     },
     buildRequestBody() {
+        console.log("<< buildRequestBody() >> ");//LOG
         const formData = JSON.stringify($("#detailsForm").serializeJSON());
-        console.log("buildRequestBody: " + formData);
+        console.log("requestBody: " + formData);//LOG
         return formData;
     },
     closeNoty() {
+        console.log("<< closeNoty() >>");//LOG
         if (failedNote) {
             failedNote.close();
             failedNote = undefined;
         }
     },
     successNoty(key) {
-        console.log("successNoty()");
+        console.log("<< successNoty() >>");//LOG
 
         this.closeNoty();
         new Noty({
@@ -337,7 +245,7 @@ const viewApi = {
         }).show();
     },
     failNoty(jqXHR) {
-        console.log("failNoty()");
+        console.log("<< failNoty() >>");//LOG
         const serverErrMsg = {
             url: "",
             type: "SERVER_ERROR",
@@ -359,9 +267,4 @@ const viewApi = {
     }
 }
 
-
-$(document).ready(() => viewApi.initTableView());
-
-
-
-
+$(document).ready(() => socketApi.connect(viewApi.initTableView));

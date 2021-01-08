@@ -23,7 +23,7 @@ public class UserSocketController {
     private final UserRepository repository;
 
     @MessageMapping("/users/getAll")
-    @SendTo("/topic/users")
+    @SendTo("/topic/users/init")
     public UserPackage getAll() {
         log.info("\n << getAll >>");
         return packUp(GET_ALL, iterableToArray(repository.findAll()));

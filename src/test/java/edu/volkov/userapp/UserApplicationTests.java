@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Sql(scripts = "classpath:data.sql", config = @SqlConfig(encoding = "UTF-8"))
+@Sql(scripts = "classpath:testData.sql", config = @SqlConfig(encoding = "UTF-8"))
 class UserApplicationTests {
 
 //    @Autowired
