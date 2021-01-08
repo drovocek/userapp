@@ -11,8 +11,8 @@ public class UserTestMatcher {
     private final BiConsumer<Iterable<User>, Iterable<User>> iterableAssertion;
 
     public UserTestMatcher() {
-        this.assertion = (a, e) -> assertThat(a).usingRecursiveComparison().ignoringFields("id").isEqualTo(e);
-        this.iterableAssertion = (a, e) -> assertThat(a).usingElementComparatorIgnoringFields("id").isEqualTo(e);
+        this.assertion = (a, e) -> assertThat(a).isEqualTo(e);
+        this.iterableAssertion = (a, e) -> assertThat(a).isEqualTo(e);
     }
 
     public void assertMatch(User actual, User expected) {

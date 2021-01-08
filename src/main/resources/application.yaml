@@ -13,7 +13,7 @@ spring:
   thymeleaf:
     cache: false
     enabled: true
-    prefix: classpath:/templates/
+    prefix: classpath:/static/templates/
     suffix: .html
 
   datasource:

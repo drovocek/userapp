@@ -1,20 +1,87 @@
-const userAjaxUrl = "/api/users";
-var failedNote;
+var stompClient = null;
+var dataTable = null;
 
-const app = {
-    start() {
-        console.log("start()");
+const socketApi = {
+    createOrUpdate() {
+        console.log("<< createOrUpdate() >>");//LOG
+        const data = $.parseJSON(viewApi.buildRequestBody());
 
-        const dataTable = $('#realtime').DataTable({
-            // data: dataSet,
-            ajax: {
-                url: userAjaxUrl,
-                dataSrc: "_embedded.users"
-            }
-            ,
+        console.log("data: " + data);//LOG
+        console.log("data.id: " + data.id);//LOG
+        if (data.id === "") {
+            stompClient.send("/app/users/create", {}, viewApi.buildRequestBody());
+        } else {
+            stompClient.send("/app/users/update/" + data.id, {}, viewApi.buildRequestBody());
+        }
+    },
+    delete() {
+        console.log("<< delete() >>");//LOG
+        stompClient.send("/app/users/delete/" + $("#id").val(), {}, "");
+    },
+    connect(callback) {
+        console.log("<< connect() >>"); //LOG
+        var socket = new SockJS('/websocket');
+        console.log("socket: " + socket);//LOG
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);//LOG
+
+            stompClient.subscribe('/topic/users', function (userPackage) {
+                const packageBody = JSON.parse(userPackage.body);
+                socketApi.doActionByPackageType(packageBody);
+            });
+
+            callback();
+        });
+    },
+    doActionByPackageType(packageBody) {
+        switch (packageBody.packageType) {
+            case 'GET_ALL':
+                console.log('packageType: GET_ALL');//LOG
+                viewApi.printTable(packageBody.users);
+                break;
+            case 'DELETE':
+                console.log('packageType: DELETE');//LOG
+                viewApi.removeRow(dataTable, packageBody.id);
+                break;
+            case 'UPDATE':
+                console.log('packageType: UPDATE');//LOG
+                viewApi.addRow(dataTable, packageBody.users[0]);
+                viewApi.removeRow(dataTable, packageBody.id);
+                break;
+            case 'CREATE':
+                console.log('packageType: CREATE');//LOG
+                viewApi.addRow(dataTable, packageBody.users[0]);
+                break;
+            // case 'GET':
+            //     console.log('packageType: GET');//LOG
+            //     viewApi.addRow(dataTable, packageBody.users[0]);
+            //     break;
+            // case 'ERROR':
+            //     console.log('packageType: ERROR');//LOG
+            //     viewApi.failNoty(packageBody);
+            //     break;
+            default:
+                console.log('packageType: none');//LOG
+                alert('NO RESPONSE TYPE');
+        }
+        viewApi.clearForm();
+    }
+}
+
+const viewApi = {
+    initTableView() {
+        console.log("<< initTableView() >>");//LOG
+
+        dataTable = $('#realtime').DataTable({
             paging: true,
             info: false,
+            responsive: true,
             columns: [
+                {
+                    title: "Id",
+                    data: "id"
+                },
                 {
                     title: "First Name",
                     data: "firstName"
@@ -38,20 +105,25 @@ const app = {
                     "asc"
                 ]
             ],
-            responsive: true
+            columnDefs: [
+                {
+                    targets: [0],
+                    visible: false,
+                    searchable: true
+                }
+            ]
         });
 
-        $('#formButton').on("click", this.createOrUpdate.bind(this, dataTable));
-        $('#delete').on("click", this.delete.bind(this, dataTable));
-        $('#clear').on("click", this.clearForm);
+        $('#formButton').on("click", socketApi.createOrUpdate.bind(this, dataTable));
+        $('#delete').on("click", socketApi.delete.bind(this, dataTable));
+        $('#clear').on("click", viewApi.clearForm);
 
-        const self = this;
+        const self = viewApi;
         $('#realtime tbody').on("click", "tr", function () {
             self.selectRow.bind(this, dataTable)();
         });
 
         const sellLayout = '<input class="form-control py-2 border-right-0 border" type="search" placeholder="Search">';
-
 
         $("#realtime thead tr").clone(true).appendTo("#realtime thead");
         $("#realtime thead tr:eq(1) th").each(function (i) {
@@ -67,164 +139,95 @@ const app = {
                 }
             });
         });
-
-        // var table = $('#realtime').DataTable({
-        //     orderCellsTop: true,
-        //     fixedHeader: true
-        // });
-
-
-        // // Pusher
-        // var pusher = new Pusher('App Key', {
-        //     cluster: 'CLUSTER',
-        //     encrypted: true
-        // });
-        //
-        // var channel = pusher.subscribe('records');
-        // channel.bind('new-record', (data) => {
-        //     this.addRow(dataTable, data);
-        // });
+        // stompClient.send("/app/users/getAll", {}, "");
     },
-    createOrUpdate(dataTable) {
-        console.log("createOrUpdate start()");
-        const dataSet = dataTable.rows('.selected').data()[0];
-        console.log(dataSet);
-        const isEntityHref = (typeof dataSet !== "undefined");
-        // const isEntityHref = (typeof dataSet === "undefined") ? false : app.checkHrefContainsAndValid(dataSet);
-
-        $.ajax({
-            type: isEntityHref ? "PUT" : "POST",
-            url: isEntityHref ? dataSet._links.user.href : userAjaxUrl,
-            data: app.buildRequestBody(),
-            contentType: "application/json",
-            cache: false,
-            success: function (data) {
-                console.log("createOrUpdate success");
-                isEntityHref ? app.rewriteRow(dataTable, data) : app.addRow(dataTable, data);
-                app.clearForm();
-                isEntityHref ? app.successNoty("Record updated") : app.successNoty("Record created");
-            },
-            error: function (jqXHR) {
-                app.failNoty(jqXHR);
-            }
-        })
-    },
-    // checkHrefContainsAndValid(dataSet) {
-    //     console.log("checkHrefContainsAndValid");
-    //
-    //     if (typeof dataSet === "undefined" ||
-    //         typeof dataSet._links === "undefined" ||
-    //         typeof dataSet._links.user === "undefined" ||
-    //         dataSet._links.user.href === "undefined"
-    //     ) return false;
-    //
-    //     const splitData = dataSet._links.user.href.split('/');
-    //     const id = splitData[splitData.length - 1];
-    //
-    //     return (app.getContextPath() + userAjaxUrl + id) === (dataSet._links.user.href);
-    // },
-    delete(dataTable) {
-        console.log("delete()");
-        const dataSet = dataTable.rows('.selected').data()[0];
-
-        if (typeof dataSet !== "undefined") {
-            const link = dataSet._links.user.href;
-            if (confirm("Are you sure?")) {
-                $.ajax({
-                    url: link,
-                    type: "DELETE",
-                    cache: false,
-                    success: function () {
-                        app.removeRow(dataTable);
-                        app.clearForm();
-                        app.successNoty("Record deleted");
-                    },
-                    error: function (jqXHR) {
-                        app.failNoty(jqXHR);
-                    }
-                })
-            }
-        }
+    printTable(usersArray) {
+        console.log("<< printTable() >>");//LOG
+        dataTable.rows.add(usersArray).draw();
     },
     addRow(dataTable, data) {
-        console.log("addRow()");
-
-        const addedRow = dataTable.row.add(data).draw();
-        // addedRow.show().draw(false);
+        console.log("<< addRow() >>");//LOG
+        const addedRow = dataTable.row.add(data).draw(false);
 
         const addedRowNode = addedRow.node();
         console.log(addedRowNode);
         $(addedRowNode).addClass("highlight");
     },
-    rewriteRow(dataTable, data) {
-        console.log("rewriteRow()");
+    removeRow(dataTable, id) {
+        console.log("<< removeRow() >>");//LOG
 
-        app.removeRow(dataTable);
-        app.addRow(dataTable, data);
+        var rowIndexes = [];
+        dataTable.rows(function (idx, data, node) {
+            if (data.id === parseInt(id)) {
+                rowIndexes.push(idx);
+            }
+            return false;
+        });
+
+        dataTable.row(rowIndexes[0]).remove().draw(false);
     },
     selectRow(dataTable) {
-        console.log("selectRow()");
+        console.log("<< selectRow() >>");//LOG
 
         if ($(this).hasClass("selected")) {
             $(this).removeClass("selected");
-            app.clearForm();
+            this.clearForm();
         } else {
             dataTable.$("tr.selected").removeClass("selected");
             $(this).addClass("selected");
-            app.fillForm(dataTable);
+            viewApi.fillForm(dataTable);
         }
     },
-    removeRow(dataTable) {
-        console.log("removeRow()");
-
-        dataTable.row(".selected").remove().draw(false);
-    },
-    buildRequestBody() {
-        const formData = JSON.stringify($("#detailsForm").serializeJSON());
-        console.log("buildRequestBody: " + formData);
-        return formData;
-    },
     clearForm() {
-        console.log("clearForm()");
+        console.log("<< clearForm() >>");//LOG
         $(".selected").removeClass("selected");
         $("#detailsForm").find(":input").val("");
-        app.drawFormDetails(false);
+        viewApi.drawFormDetails(false);
     },
     fillForm(dataTable) {
-        console.log("fillForm()");
+        console.log("<< fillForm() >>");//LOG
         const dataSet = dataTable.rows(".selected").data()[0];
 
+        $('#id').val(dataSet.id);
         $('#firstName').val(dataSet.firstName);
         $('#lastName').val(dataSet.lastName);
         $('#phoneNumber').val(dataSet.phoneNumber);
         $('#email').val(dataSet.email);
 
-        app.drawFormDetails(true);
+        this.drawFormDetails(true);
     },
     drawFormDetails(isForUpdate) {
-        console.log("drawFormDetails()");
+        console.log("<< drawFormDetails() >>");//LOG
 
         const formBtn = $("#formButton");
         const deleteBtn = $("#delete");
         const formTitle = $("#formTitle");
 
-        formBtn.removeClass((isForUpdate) ? "btn btn-success" : "btn btn-warning");
-        formBtn.addClass((isForUpdate) ? "btn btn-warning" : "btn btn-success");
-        formBtn.html((isForUpdate) ? "Update" : "Create");
+        formBtn.removeClass((isForUpdate) ? "btn btn-success" : "btn btn-warning")
+            .addClass((isForUpdate) ? "btn btn-warning" : "btn btn-success")
+            .html((isForUpdate) ? "Update" : "Create");
+
         formTitle.html((isForUpdate) ? "Update User" : "Create User");
 
         (isForUpdate) ? deleteBtn.show() : deleteBtn.hide();
     },
+    buildRequestBody() {
+        console.log("<< buildRequestBody() >> ");//LOG
+        const formData = JSON.stringify($("#detailsForm").serializeJSON());
+        console.log("requestBody: " + formData);//LOG
+        return formData;
+    },
     closeNoty() {
+        console.log("<< closeNoty() >>");//LOG
         if (failedNote) {
             failedNote.close();
             failedNote = undefined;
         }
     },
     successNoty(key) {
-        console.log("successNoty()");
+        console.log("<< successNoty() >>");//LOG
 
-        app.closeNoty();
+        this.closeNoty();
         new Noty({
             text: "<span class='fa fa-lg fa-check'></span> &nbsp;" + key,
             type: "success",
@@ -235,7 +238,7 @@ const app = {
         }).show();
     },
     failNoty(jqXHR) {
-        console.log("failNoty()");
+        console.log("<< failNoty() >>");//LOG
         const serverErrMsg = {
             url: "",
             type: "SERVER_ERROR",
@@ -254,14 +257,7 @@ const app = {
             layout: "bottomRight",
             timeout: 2000
         }).show();
-    },
-    getContextPath() {
-        return window.location.pathname;
     }
-};
+}
 
-$(document).ready(() => app.start());
-
-
-
-
+$(document).ready(() => socketApi.connect(viewApi.initTableView));
