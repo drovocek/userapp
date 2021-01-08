@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.NoSuchElementException;
@@ -22,8 +23,9 @@ public class UserSocketController {
 
     private final UserRepository repository;
 
-    @MessageMapping("/users/getAll")
-    @SendTo("/topic/users/init")
+//    @MessageMapping("/users/getAll")
+//    @SendTo("/topic/users/init")
+    @SubscribeMapping("/users")
     public UserPackage getAll() {
         log.info("\n << getAll >>");
         return packUp(GET_ALL, iterableToArray(repository.findAll()));

@@ -8,7 +8,11 @@ import java.util.stream.StreamSupport;
 
 public class UserUtil {
     public static UserPackage packUp(PackageType type, User... user) {
-        return new UserPackage(user, type.name());
+        return new UserPackage(
+                user.length == 1 ? user[0].id() : null,
+                user,
+                type.name()
+        );
     }
 
     public static User[] iterableToArray(Iterable<User> users) {

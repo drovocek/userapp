@@ -12,6 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 public class UserPackage {
 
+    private Integer id;
+
     private User[] users;
 
     private String packageType;

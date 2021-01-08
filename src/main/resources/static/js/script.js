@@ -20,18 +20,11 @@ const socketApi = {
     },
     connect(callback) {
         console.log("<< connect() >>"); //LOG
-        var socket = new SockJS('/gs-guide-websocket');
+        var socket = new SockJS('/websocket');
         console.log("socket: " + socket);//LOG
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);//LOG
-
-            stompClient.subscribe('/topic/users/init', function (userPackage) {
-                const packageBody = JSON.parse(userPackage.body);
-                socketApi.doActionByPackageType(packageBody);
-                stompClient.unsubscribe("initTableData");
-            }, {id: "initTableData"});
-
 
             stompClient.subscribe('/topic/users', function (userPackage) {
                 const packageBody = JSON.parse(userPackage.body);
@@ -49,12 +42,12 @@ const socketApi = {
                 break;
             case 'DELETE':
                 console.log('packageType: DELETE');//LOG
-                viewApi.removeRow(dataTable, packageBody.users[0].id);
+                viewApi.removeRow(dataTable, packageBody.id);
                 break;
             case 'UPDATE':
                 console.log('packageType: UPDATE');//LOG
                 viewApi.addRow(dataTable, packageBody.users[0]);
-                viewApi.removeRow(dataTable, packageBody.users[0].id);
+                viewApi.removeRow(dataTable, packageBody.id);
                 break;
             case 'CREATE':
                 console.log('packageType: CREATE');//LOG
@@ -146,7 +139,7 @@ const viewApi = {
                 }
             });
         });
-        stompClient.send("/app/users/getAll", {}, "");
+        // stompClient.send("/app/users/getAll", {}, "");
     },
     printTable(usersArray) {
         console.log("<< printTable() >>");//LOG
