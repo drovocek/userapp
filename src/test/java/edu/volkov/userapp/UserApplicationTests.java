@@ -1,42 +1,138 @@
 package edu.volkov.userapp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.volkov.userapp.model.User;
 import edu.volkov.userapp.repository.UserRepository;
-import org.junit.jupiter.api.Test;
+import edu.volkov.userapp.to.UserPackage;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
+import org.springframework.messaging.simp.stomp.StompFrameHandler;
+import org.springframework.messaging.simp.stomp.StompHeaders;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.TransactionSystemException;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
+import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.web.socket.sockjs.client.Transport;
+import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
-import javax.validation.ConstraintViolationException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.lang.reflect.Type;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import static edu.volkov.userapp.testdata.UserTestData.*;
-import static edu.volkov.userapp.util.exception.ErrorType.*;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertNotNull;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@RunWith(SpringJUnit4ClassRunner.class)
 @Sql(scripts = "classpath:testData.sql", config = @SqlConfig(encoding = "UTF-8"))
-class UserApplicationTests {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class UserApplicationTests {
+
+    @Autowired
+    UserRepository repository;
+
+    @Value("${local.server.port}")
+    private int port;
+    private String URL;
+
+    private static final String SEND_GET_ENDPOINT = "/app/users/get/";
+    private static final String SEND_CREATE_ENDPOINT = "/app/users/create";
+    private static final String SEND_DELETE_ENDPOINT = "/app/users/delete/";
+    private static final String SEND_UPDATE_ENDPOINT = "/app/users/update/";
+    private static final String SUBSCRIBE_ALL_ENDPOINT = "/topic/users";
+
+    private CompletableFuture<UserPackage> completableUserFuture;
+    private CompletableFuture<Integer> completableIdFuture;
+
+    @Before
+    public void setup() {
+        completableUserFuture = new CompletableFuture<>();
+        completableIdFuture = new CompletableFuture<>();
+        URL = "ws://localhost:" + port + "/websocket";
+    }
+
+    private List<Transport> createTransportClient() {
+        List<Transport> transports = new ArrayList<>(1);
+        transports.add(new WebSocketTransport(new StandardWebSocketClient()));
+        return transports;
+    }
+
+    private class CreateUserFrameHandler implements StompFrameHandler {
+        @Override
+        public Type getPayloadType(StompHeaders stompHeaders) {
+            return UserPackage.class;
+        }
+
+        @Override
+        public void handleFrame(StompHeaders stompHeaders, Object o) {
+            completableUserFuture.complete((UserPackage) o);
+        }
+    }
+
+    @Test
+    public void testCreateGameEndpoint() throws URISyntaxException, InterruptedException, ExecutionException, TimeoutException {
+
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+        StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
+        }).get(1, SECONDS);
+
+        stompSession.subscribe(SEND_CREATE_ENDPOINT, new CreateUserFrameHandler());
+        stompSession.send(SEND_CREATE_ENDPOINT, getNew());
+
+        User created = completableUserFuture.get(2, SECONDS).getUsers()[0];
+        Thread.sleep(2000);
+
+        User createdFromDb = repository.findById(NEW_USER_ID).get();
+        assertNotNull(createdFromDb);
+
+        USER_MATCHER.assertMatch(created, createdFromDb);
+    }
+
+    @Test
+    public void testUpdateGameEndpoint() throws URISyntaxException, InterruptedException, ExecutionException, TimeoutException {
+
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+        StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
+        }).get(1, SECONDS);
+
+        stompSession.subscribe(SEND_UPDATE_ENDPOINT+USER1_ID, new CreateUserFrameHandler());
+        stompSession.send(SEND_UPDATE_ENDPOINT+USER1_ID, getUpdated());
+
+        User updated = completableUserFuture.get(2, SECONDS).getUsers()[0];
+        Thread.sleep(2000);
+
+        User updatedFromDb = repository.findById(USER1_ID).get();
+        assertNotNull(updatedFromDb);
+
+        USER_MATCHER.assertMatch(updated, updatedFromDb);
+    }
+
+
+
+//    @LocalServerPort
+//    private Integer port;
+//
+//    @BeforeEach
+//    public void setup() {
+//        this.webSocketStompClient = new WebSocketStompClient(new SockJsClient(
+//                Collections.singletonList(new WebSocketTransport(new StandardWebSocketClient()))));
+//    }
 
 //    @Autowired
 //    private MockMvc mockMvc;

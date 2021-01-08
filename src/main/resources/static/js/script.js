@@ -11,12 +11,12 @@ const socketApi = {
         if (data.id === "") {
             stompClient.send("/app/users/create", {}, viewApi.buildRequestBody());
         } else {
-            stompClient.send("/app/users/update", {}, viewApi.buildRequestBody());
+            stompClient.send("/app/users/update/" + data.id, {}, viewApi.buildRequestBody());
         }
     },
     delete() {
         console.log("<< delete() >>");//LOG
-        stompClient.send("/app/users/delete", {}, $("#id").val());
+        stompClient.send("/app/users/delete/" + $("#id").val(), {}, "");
     },
     connect(callback) {
         console.log("<< connect() >>"); //LOG

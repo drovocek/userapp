@@ -5,6 +5,7 @@ import edu.volkov.userapp.repository.UserRepository;
 import edu.volkov.userapp.to.UserPackage;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
@@ -23,17 +24,9 @@ public class UserSocketController {
 
     private final UserRepository repository;
 
-//    @MessageMapping("/users/getAll")
-//    @SendTo("/topic/users/init")
-    @SubscribeMapping("/users")
-    public UserPackage getAll() {
-        log.info("\n << getAll >>");
-        return packUp(GET_ALL, iterableToArray(repository.findAll()));
-    }
-
-    @MessageMapping("/users/get")
+    @MessageMapping("/users/get/{id}")
     @SendTo("/topic/users")
-    public UserPackage get(Integer id) {
+    public UserPackage get(@DestinationVariable Integer id) {
         log.info("\n << get by id: {} >>", id);
         User user = repository.findById(id).orElse(null);
         if (user == null) {
@@ -46,12 +39,17 @@ public class UserSocketController {
     @SendTo("/topic/users")
     public UserPackage create(User user) {
         log.info("\n << create: {} >>", user);
-        return packUp(CREATE, repository.save(user));
+        if (!user.isNew()) {
+            throw new RuntimeException("user has id, he is not new");
+        }
+        User created = repository.save(user);
+        log.info("\n << created: {} >>", created);
+        return packUp(CREATE, created);
     }
 
-    @MessageMapping("/users/delete")
+    @MessageMapping("/users/delete/{id}")
     @SendTo("/topic/users")
-    public UserPackage delete(Integer id) {
+    public UserPackage delete(@DestinationVariable Integer id) {
         log.info("\n << delete by id: {} >>", id);
         if (repository.delete(id) == 0) {
             throw new NoSuchElementException("no user by id: " + id);
@@ -60,14 +58,25 @@ public class UserSocketController {
         return packUp(DELETE, deleted);
     }
 
-    @MessageMapping("/users/update")
+    @MessageMapping("/users/update/{id}")
     @SendTo("/topic/users")
-    public UserPackage update(User user) {
+    public UserPackage update(@DestinationVariable Integer id, User user) {
         log.info("\n << update: {} >>", user);
-        User checked = repository.findById(user.getId()).orElse(null);
+        if (!user.getId().equals(id)) {
+            throw new RuntimeException("id is not the user id");
+        }
+        User checked = repository.findById(id).orElse(null);
         if (checked == null) {
             throw new NoSuchElementException("update failed, no user by id: " + user.getId());
         }
-        return packUp(UPDATE, repository.save(user));
+        User updated = repository.save(user);
+        log.info("\n << updated: {} >>", updated);
+        return packUp(UPDATE, updated);
+    }
+
+    @SubscribeMapping("/users")
+    public UserPackage getAll() {
+        log.info("\n << getAll >>");
+        return packUp(GET_ALL, iterableToArray(repository.findAll()));
     }
 }
