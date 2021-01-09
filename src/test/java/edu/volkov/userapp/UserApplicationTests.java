@@ -232,7 +232,6 @@ public class UserApplicationTests {
         assertEquals(ErrorType.VALIDATION_ERROR, validationError.getType());
     }
 
-
     @Test
     public void delete() throws InterruptedException, ExecutionException, TimeoutException {
 

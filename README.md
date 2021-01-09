@@ -11,9 +11,10 @@ Test task for getting a job
 ## Technology stack
 - Java 8
 - Spring Boot
-- Spring Data Rest
+- Spring WebSocket
 - H2
 - Slf4j
+- JUnit4
 - JQuery, BootStrap
 
 ## Documentation

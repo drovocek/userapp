@@ -2,10 +2,8 @@ package edu.volkov.userapp.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.h2.tools.Server;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
 import java.sql.SQLException;
 
