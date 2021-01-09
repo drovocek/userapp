@@ -3,6 +3,8 @@ package edu.volkov.userapp;
 import edu.volkov.userapp.model.User;
 import edu.volkov.userapp.repository.UserRepository;
 import edu.volkov.userapp.to.UserPackage;
+import edu.volkov.userapp.util.exception.ApiError;
+import edu.volkov.userapp.util.exception.ErrorType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,6 +57,8 @@ public class UserApplicationTests {
     private static final String SUBSCRIBE_ENDPOINT = "/topic/users";
     private static final String SUBSCRIBE_GET_ENDPOINT = "/app/users/get/";
     private static final String SUBSCRIBE_GET_ALL_ENDPOINT = "/app/users/getAll";
+    private static final String SUBSCRIBE_QUEUE_ENDPOINT = "/user/queue/users";
+    private static final String SUBSCRIBE_ERRORS_ENDPOINT = "/user/queue/errors";
 
     private CompletableFuture<UserPackage> completableUserPackageFuture;
 
@@ -83,7 +87,6 @@ public class UserApplicationTests {
             completableUserPackageFuture.complete((UserPackage) o);
         }
     }
-
 
     @Test
     public void create() throws InterruptedException, ExecutionException, TimeoutException {
@@ -118,10 +121,18 @@ public class UserApplicationTests {
         User newUserWithDuplicateEmail = getNew();
         newUserWithDuplicateEmail.setEmail(USER1.getEmail());
 
-        stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_ERRORS_ENDPOINT, new CreateUserPackageFrameHandler());
         stompSession.send(SEND_CREATE_ENDPOINT, newUserWithDuplicateEmail);
 
-        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+        UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
+
+        User[] users = userPackageWithError.getUsers();
+        assertNull(users);
+
+        ApiError notFoundError = userPackageWithError.getApiError();
+        assertNotNull(notFoundError);
+
+        assertEquals(ErrorType.VALIDATION_ERROR, notFoundError.getType());
     }
 
     @Test
@@ -135,10 +146,18 @@ public class UserApplicationTests {
 
         User newInvalidUser = new User(null, "", "", "", "");
 
-        stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_ERRORS_ENDPOINT, new CreateUserPackageFrameHandler());
         stompSession.send(SEND_CREATE_ENDPOINT, newInvalidUser);
 
-        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+        UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
+
+        User[] users = userPackageWithError.getUsers();
+        assertNull(users);
+
+        ApiError validationError = userPackageWithError.getApiError();
+        assertNotNull(validationError);
+
+        assertEquals(ErrorType.VALIDATION_ERROR, validationError.getType());
     }
 
     @Test
@@ -174,10 +193,18 @@ public class UserApplicationTests {
         User updatedUserWithDuplicateEmail = getUpdated();
         updatedUserWithDuplicateEmail.setEmail(USER_2.getEmail());
 
-        stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_ERRORS_ENDPOINT, new CreateUserPackageFrameHandler());
         stompSession.send(SEND_UPDATE_ENDPOINT + USER1_ID, updatedUserWithDuplicateEmail);
 
-        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+        UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
+
+        User[] users = userPackageWithError.getUsers();
+        assertNull(users);
+
+        ApiError validationError = userPackageWithError.getApiError();
+        assertNotNull(validationError);
+
+        assertEquals(ErrorType.VALIDATION_ERROR, validationError.getType());
     }
 
     @Test
@@ -191,10 +218,18 @@ public class UserApplicationTests {
 
         User updatedInvalidUser = new User(USER1_ID, "", "", "", "");
 
-        stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_ERRORS_ENDPOINT, new CreateUserPackageFrameHandler());
         stompSession.send(SEND_UPDATE_ENDPOINT + USER1_ID, updatedInvalidUser);
 
-        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+        UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
+
+        User[] users = userPackageWithError.getUsers();
+        assertNull(users);
+
+        ApiError validationError = userPackageWithError.getApiError();
+        assertNotNull(validationError);
+
+        assertEquals(ErrorType.VALIDATION_ERROR, validationError.getType());
     }
 
 
@@ -228,10 +263,19 @@ public class UserApplicationTests {
         StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
         }).get(1, SECONDS);
 
+        stompSession.subscribe(SUBSCRIBE_ERRORS_ENDPOINT, new CreateUserPackageFrameHandler());
         stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
         stompSession.send(SEND_DELETE_ENDPOINT + USER_NOT_FOUND_ID, null);
 
-        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+        UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
+
+        User[] users = userPackageWithError.getUsers();
+        assertNull(users);
+
+        ApiError notFoundError = userPackageWithError.getApiError();
+        assertNotNull(notFoundError);
+
+        assertEquals(ErrorType.DATA_NOT_FOUND, notFoundError.getType());
     }
 
     @Test
@@ -243,7 +287,8 @@ public class UserApplicationTests {
         StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
         }).get(1, SECONDS);
 
-        stompSession.subscribe(SUBSCRIBE_GET_ENDPOINT + USER1_ID, new CreateUserPackageFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_QUEUE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.send(SUBSCRIBE_GET_ENDPOINT + USER1_ID, null);
 
         User user = completableUserPackageFuture.get(2, SECONDS).getUsers()[0];
         assertNotNull(user);
@@ -260,9 +305,19 @@ public class UserApplicationTests {
         StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
         }).get(1, SECONDS);
 
-        stompSession.subscribe(SUBSCRIBE_GET_ENDPOINT + USER_NOT_FOUND_ID, new CreateUserPackageFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_QUEUE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_ERRORS_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.send(SUBSCRIBE_GET_ENDPOINT + USER_NOT_FOUND_ID, null);
 
-//        Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+        UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
+
+        User[] users = userPackageWithError.getUsers();
+        assertNull(users);
+
+        ApiError notFoundError = userPackageWithError.getApiError();
+        assertNotNull(notFoundError);
+
+        assertEquals(ErrorType.DATA_NOT_FOUND, notFoundError.getType());
     }
 
     @Test
@@ -274,18 +329,11 @@ public class UserApplicationTests {
         StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
         }).get(1, SECONDS);
 
-        stompSession.subscribe(SUBSCRIBE_GET_ALL_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_QUEUE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.send(SUBSCRIBE_GET_ALL_ENDPOINT, null);
 
         User[] users = completableUserPackageFuture.get(2, SECONDS).getUsers();
 
         USER_MATCHER.assertMatch(Arrays.asList(users), USERS_LIST);
     }
-
-////    @Test
-////    public void updateHtmlUnsafe() throws Exception {
-////        this.mockMvc.perform(put("/api/users/1")
-////                .contentType(MediaTypes.HAL_JSON_VALUE)
-////                .content(USER_HTML_UNSAFE_HAL_JSON))
-////                .andExpect(status().isConflict());
-////    }
 }

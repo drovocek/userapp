@@ -1,6 +1,7 @@
 package edu.volkov.userapp.to;
 
 import edu.volkov.userapp.model.User;
+import edu.volkov.userapp.util.exception.ApiError;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,4 +20,12 @@ public class UserPackage implements Serializable {
     private User[] users;
 
     private String packageType;
+
+    private ApiError apiError;
+
+    public UserPackage(Integer id, User[] users, String packageType) {
+        this.id = id;
+        this.users = users;
+        this.packageType = packageType;
+    }
 }

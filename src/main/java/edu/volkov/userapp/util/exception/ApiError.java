@@ -1,22 +1,19 @@
 package edu.volkov.userapp.util.exception;
 
-import edu.volkov.userapp.util.PackageType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.io.Serializable;
 
 @Getter
-public class ApiError {
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ApiError implements Serializable {
 
-    private final String url;
-    private final ErrorType type;
-    private final String typeMessage;
-    private final String[] details;
-    private final String packageType;
-
-    public ApiError(CharSequence url, ErrorType type, String typeMessage, PackageType packageType, String... details) {
-        this.url = url.toString();
-        this.type = type;
-        this.typeMessage = typeMessage;
-        this.details = details;
-        this.packageType = packageType.name();
-    }
+    private ErrorType type;
+    private String typeMessage;
+    private String[] details;
 }

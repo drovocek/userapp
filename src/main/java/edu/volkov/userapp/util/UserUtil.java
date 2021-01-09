@@ -1,6 +1,7 @@
 package edu.volkov.userapp.util;
 
 import edu.volkov.userapp.model.User;
+import edu.volkov.userapp.to.PackageType;
 import edu.volkov.userapp.to.UserPackage;
 
 import java.util.stream.Collectors;

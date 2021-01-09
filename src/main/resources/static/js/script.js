@@ -26,15 +26,17 @@ const socketApi = {
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);//LOG
 
-            stompClient.subscribe('/app/users', function (userPackage) {
-                const packageBody = JSON.parse(userPackage.body);
-                socketApi.doActionByPackageType(packageBody);
-            });
-
             stompClient.subscribe('/topic/users', function (userPackage) {
                 const packageBody = JSON.parse(userPackage.body);
                 socketApi.doActionByPackageType(packageBody);
             });
+
+            stompClient.subscribe('/user/queue/users', function (userPackage) {
+                const packageBody = JSON.parse(userPackage.body);
+                socketApi.doActionByPackageType(packageBody);
+            });
+
+            stompClient.send("/app/users/getAll", {}, "");
 
             callback();
         });
@@ -58,14 +60,14 @@ const socketApi = {
                 console.log('packageType: CREATE');//LOG
                 viewApi.addRow(dataTable, packageBody.users[0]);
                 break;
-            // case 'GET':
-            //     console.log('packageType: GET');//LOG
-            //     viewApi.addRow(dataTable, packageBody.users[0]);
-            //     break;
-            // case 'ERROR':
-            //     console.log('packageType: ERROR');//LOG
-            //     viewApi.failNoty(packageBody);
-            //     break;
+            case 'GET':
+                console.log('packageType: GET');//LOG
+                viewApi.addRow(dataTable, packageBody.users[0]);
+                break;
+            case 'ERROR':
+                console.log('packageType: ERROR');//LOG
+                viewApi.failNoty(packageBody.errorMessage);
+                break;
             default:
                 console.log('packageType: none');//LOG
                 alert('NO RESPONSE TYPE');
