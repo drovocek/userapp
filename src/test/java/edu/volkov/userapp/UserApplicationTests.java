@@ -107,6 +107,41 @@ public class UserApplicationTests {
     }
 
     @Test
+    public void createDuplicateEmail() throws InterruptedException, ExecutionException, TimeoutException {
+
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+        StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
+        }).get(1, SECONDS);
+
+        User newUserWithDuplicateEmail = getNew();
+        newUserWithDuplicateEmail.setEmail(USER1.getEmail());
+
+        stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.send(SEND_CREATE_ENDPOINT, newUserWithDuplicateEmail);
+
+        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+    }
+
+    @Test
+    public void createInvalid() throws InterruptedException, ExecutionException, TimeoutException {
+
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+        StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
+        }).get(1, SECONDS);
+
+        User newInvalidUser = new User(null, "", "", "", "");
+
+        stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.send(SEND_CREATE_ENDPOINT, newInvalidUser);
+
+        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+    }
+
+    @Test
     public void update() throws InterruptedException, ExecutionException, TimeoutException {
 
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
@@ -128,6 +163,42 @@ public class UserApplicationTests {
     }
 
     @Test
+    public void updateDuplicateEmail() throws InterruptedException, ExecutionException, TimeoutException {
+
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+        StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
+        }).get(1, SECONDS);
+
+        User updatedUserWithDuplicateEmail = getUpdated();
+        updatedUserWithDuplicateEmail.setEmail(USER_2.getEmail());
+
+        stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.send(SEND_UPDATE_ENDPOINT + USER1_ID, updatedUserWithDuplicateEmail);
+
+        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+    }
+
+    @Test
+    public void updateInvalid() throws InterruptedException, ExecutionException, TimeoutException {
+
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+        StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
+        }).get(1, SECONDS);
+
+        User updatedInvalidUser = new User(USER1_ID, "", "", "", "");
+
+        stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.send(SEND_UPDATE_ENDPOINT + USER1_ID, updatedInvalidUser);
+
+        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
+    }
+
+
+    @Test
     public void delete() throws InterruptedException, ExecutionException, TimeoutException {
 
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
@@ -137,7 +208,7 @@ public class UserApplicationTests {
         }).get(1, SECONDS);
 
         stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
-        stompSession.send(SEND_DELETE_ENDPOINT + USER1_ID, getUpdated());
+        stompSession.send(SEND_DELETE_ENDPOINT + USER1_ID, null);
 
         Integer deletedId = completableUserPackageFuture.get(2, SECONDS).getId();
         assertNotNull(deletedId);
@@ -146,6 +217,21 @@ public class UserApplicationTests {
         assertNull(deleted);
 
         assertEquals(deletedId, USER1_ID);
+    }
+
+    @Test
+    public void deleteNotFound() throws InterruptedException, ExecutionException, TimeoutException {
+
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+        StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
+        }).get(1, SECONDS);
+
+        stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
+        stompSession.send(SEND_DELETE_ENDPOINT + USER_NOT_FOUND_ID, null);
+
+        //Exception exception = completableUserPackageFuture.get(2, SECONDS).getExceptions()[0];
     }
 
     @Test
@@ -195,209 +281,6 @@ public class UserApplicationTests {
         USER_MATCHER.assertMatch(Arrays.asList(users), USERS_LIST);
     }
 
-
-//
-//    @Test
-//    void getNotFound() throws Exception {
-//        this.mockMvc.perform(get(BASE_PATH + "/" + USER_NOT_FOUND_ID))
-//                .andDo(print())
-//                .andExpect(status().isUnprocessableEntity())
-//                .andExpect(jsonPath("$.type").value(DATA_NOT_FOUND.name()));
-//
-//        assertThrows(NoSuchElementException.class, () -> repository.findById(USER_NOT_FOUND_ID).get());
-//    }
-//
-//    @Test
-//    void getByEmail() throws Exception {
-//        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/by")
-//                .param("email", USER1.getEmail()))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
-//
-//        verifyJsonWithOneUser(result, USER1, USER1_ID);
-//
-//        USER_MATCHER.assertMatch(repository.findByEmailIgnoreCase(USER1.getEmail()).get(), USER1);
-//    }
-//
-//    @Test
-//    public void getAll() throws Exception {
-//        final ResultActions result = this.mockMvc.perform(get(BASE_PATH))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE));
-//
-//        verifyJsonWithManyUsers(result, USERS_MAP);
-//
-//        USER_MATCHER.assertMatch(repository.findAll(), USERS_LIST);
-//    }
-//
-//    @Test
-//    public void getFilteredOne() throws Exception {
-//        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
-//                .param("pageNumber", "0")
-//                .param("pageSize", "20")
-//                .param("phoneNumber", USER1.getPhoneNumber())
-//                .param("email", USER1.getEmail())
-//                .param("firstName", USER1.getFirstName())
-//                .param("lastName", USER1.getLastName()))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-//                .andExpect(jsonPath("size", is(20)))
-//                .andExpect(jsonPath("totalElements", is(ONE_USER_MAP.size())))
-//                .andExpect(jsonPath("totalPages", is(1)))
-//                .andExpect(jsonPath("number", is(0)));
-//    }
-//
-//    @Test
-//    public void getFilteredAllWithBlankParam() throws Exception {
-//        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
-//                .param("pageNumber", "0")
-//                .param("pageSize", "20")
-//                .param("phoneNumber", "")
-//                .param("email", "")
-//                .param("firstName", "")
-//                .param("lastName", ""))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-//                .andExpect(jsonPath("size", is(20)))
-//                .andExpect(jsonPath("totalElements", is(USERS_LIST.size())))
-//                .andExpect(jsonPath("totalPages", is(1)))
-//                .andExpect(jsonPath("number", is(0)));
-//    }
-//
-//    @Test
-//    public void getFilteredOneWithUpperParam() throws Exception {
-//        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
-//                .param("pageNumber", "0")
-//                .param("pageSize", "20")
-//                .param("phoneNumber", USER1.getPhoneNumber().toUpperCase())
-//                .param("email", USER1.getEmail().toUpperCase())
-//                .param("firstName", USER1.getFirstName().toUpperCase())
-//                .param("lastName", USER1.getLastName().toUpperCase()))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-//                .andExpect(jsonPath("size", is(20)))
-//                .andExpect(jsonPath("totalElements", is(ONE_USER_MAP.size())))
-//                .andExpect(jsonPath("totalPages", is(1)))
-//                .andExpect(jsonPath("number", is(0)));
-//    }
-//
-//    @Test
-//    public void getFilteredOneWithHalfStringParam() throws Exception {
-//        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
-//                .param("pageNumber", "0")
-//                .param("pageSize", "20")
-//                .param("phoneNumber", "(111)")
-//                .param("email", "asily")
-//                .param("firstName", "as")
-//                .param("lastName", "van"))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-//                .andExpect(jsonPath("size", is(20)))
-//                .andExpect(jsonPath("totalElements", is(ONE_USER_MAP.size())))
-//                .andExpect(jsonPath("totalPages", is(1)))
-//                .andExpect(jsonPath("number", is(0)));
-//    }
-//
-//    @Test
-//    public void getFilteredAllWithoutParam() throws Exception {
-//        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter"))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-//                .andExpect(jsonPath("size", is(20)))
-//                .andExpect(jsonPath("totalElements", is(USERS_LIST.size())))
-//                .andExpect(jsonPath("totalPages", is(1)))
-//                .andExpect(jsonPath("number", is(0)));
-//    }
-//
-//    @Test
-//    public void getFilteredEmptyList() throws Exception {
-//        final ResultActions result = this.mockMvc.perform(get(BASE_PATH + "/filter")
-//                .param("pageNumber", "0")
-//                .param("pageSize", "20")
-//                .param("phoneNumber", "1234")
-//                .param("email", "")
-//                .param("firstName", "")
-//                .param("lastName", ""))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-//                .andExpect(jsonPath("size", is(20)))
-//                .andExpect(jsonPath("totalElements", is(0)))
-//                .andExpect(jsonPath("totalPages", is(0)))
-//                .andExpect(jsonPath("number", is(0)));
-//    }
-//
-//    @Test
-//    void deleteGood() throws Exception {
-//        this.mockMvc.perform(delete(BASE_PATH + "/" + USER1_ID))
-//                .andDo(print())
-//                .andExpect(status().isNoContent());
-//
-//        assertFalse(repository.findById(USER1_ID).isPresent());
-//    }
-//
-//    @Test
-//    void deleteNotFound() throws Exception {
-//        this.mockMvc.perform(delete(BASE_PATH + "/" + USER_NOT_FOUND_ID))
-//                .andDo(print())
-//                .andExpect(status().isUnprocessableEntity())
-//                .andExpect(jsonPath("$.type").value(DATA_NOT_FOUND.name()));
-//
-//        assertThrows(EmptyResultDataAccessException.class, () -> repository.deleteById(USER_NOT_FOUND_ID));
-//    }
-//
-//    @Test
-//    void update() throws Exception {
-//        User expected = getUpdated();
-//
-//        this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
-//                .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                .content(mapper.writeValueAsString(expected)))
-//                .andDo(print())
-//                .andExpect(status().isCreated());
-//
-//        User actual = repository.findById(USER1_ID).get();
-//
-//        USER_MATCHER.assertMatch(actual, expected);
-//    }
-//
-//    @Test
-//    void updateDuplicateEmail() throws Exception {
-//        this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
-//                .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                .content(mapper.writeValueAsString(USER_WITH_DUPLICATE_EMAIL)))
-//                .andDo(print())
-//                .andExpect(status().isConflict())
-//                .andExpect(jsonPath("$.type").value(DATA_ERROR.name()));
-//
-//        assertThrows(DataIntegrityViolationException.class, () -> repository.save(USER_WITH_DUPLICATE_EMAIL));
-//    }
-//
-//    @Test
-//    void updateInvalid() throws Exception {
-//        User invalid = new User(USER1);
-//        invalid.setFirstName("");
-//        invalid.setLastName("");
-//        invalid.setPhoneNumber("");
-//        invalid.setEmail("");
-//
-//        this.mockMvc.perform(put(BASE_PATH + "/" + USER1_ID)
-//                .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                .content(mapper.writeValueAsString(invalid)))
-//                .andDo(print())
-//                .andExpect(status().isUnprocessableEntity())
-//                .andExpect(jsonPath("$.type").value(VALIDATION_ERROR.name()));
-//
-//        assertThrows(TransactionSystemException.class, () -> repository.save(invalid));
-//    }
-//
 ////    @Test
 ////    public void updateHtmlUnsafe() throws Exception {
 ////        this.mockMvc.perform(put("/api/users/1")
@@ -405,51 +288,4 @@ public class UserApplicationTests {
 ////                .content(USER_HTML_UNSAFE_HAL_JSON))
 ////                .andExpect(status().isConflict());
 ////    }
-//
-//    @Test
-//    void create() throws Exception {
-//        User newUser = getNew();
-//
-//        ResultActions action = this.mockMvc.perform(post(BASE_PATH)
-//                .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                .content(mapper.writeValueAsString(newUser)))
-//                .andDo(print())
-//                .andExpect(status().isCreated());
-//
-//        User created = mapper.readValue(action.andReturn().getResponse().getContentAsString(), User.class);
-//        User createdFromDb = repository.findById(NEW_USER_ID).get();
-//
-//        USER_MATCHER.assertMatch(created, newUser);
-//        USER_MATCHER.assertMatch(createdFromDb, newUser);
-//    }
-//
-//    @Test
-//    void createDuplicateEmail() throws Exception {
-//        this.mockMvc.perform(post(BASE_PATH)
-//                .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                .content(mapper.writeValueAsString(USER_WITH_DUPLICATE_EMAIL)))
-//                .andDo(print())
-//                .andExpect(status().isConflict())
-//                .andExpect(jsonPath("$.type").value(DATA_ERROR.name()));
-//
-//        assertThrows(DataIntegrityViolationException.class, () -> repository.save(USER_WITH_DUPLICATE_EMAIL));
-//    }
-//
-//    @Test
-//    void createInvalid() throws Exception {
-//        User invalid = getNew();
-//        invalid.setFirstName("");
-//        invalid.setLastName("");
-//        invalid.setPhoneNumber("");
-//        invalid.setEmail("");
-//
-//        this.mockMvc.perform(post(BASE_PATH)
-//                .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                .content(mapper.writeValueAsString(invalid)))
-//                .andDo(print())
-//                .andExpect(status().isUnprocessableEntity())
-//                .andExpect(jsonPath("$.type").value(VALIDATION_ERROR.name()));
-//
-//        assertThrows(ConstraintViolationException.class, () -> repository.save(invalid));
-//    }
 }
