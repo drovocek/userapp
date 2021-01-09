@@ -6,8 +6,6 @@ const socketApi = {
         console.log("<< createOrUpdate() >>");//LOG
         const data = $.parseJSON(viewApi.buildRequestBody());
 
-        console.log("data: " + data);//LOG
-        console.log("data.id: " + data.id);//LOG
         if (data.id === "") {
             stompClient.send("/app/users/create", {}, viewApi.buildRequestBody());
         } else {
@@ -20,21 +18,39 @@ const socketApi = {
     },
     connect(callback) {
         console.log("<< connect() >>"); //LOG
-        var socket = new SockJS('/websocket');
+        const sessionId = socketApi.getRandomString(8);
+        const socket = new SockJS('/websocket', [], {
+            sessionId: () => {
+                return sessionId;
+            }
+        });
         console.log("socket: " + socket);//LOG
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);//LOG
+            console.log('Session id: ' + sessionId);//LOG
+
+            stompClient.subscribe('/user/queue/errors', function (userPackage) {
+                const packageBody = JSON.parse(userPackage.body);
+                socketApi.doActionByPackageType(packageBody, sessionId);
+            });
 
             stompClient.subscribe('/topic/users', function (userPackage) {
                 const packageBody = JSON.parse(userPackage.body);
-                socketApi.doActionByPackageType(packageBody);
+                socketApi.doActionByPackageType(packageBody, sessionId);
             });
+
+            stompClient.subscribe('/user/queue/users', function (userPackage) {
+                const packageBody = JSON.parse(userPackage.body);
+                socketApi.doActionByPackageType(packageBody, sessionId);
+            });
+
+            stompClient.send("/app/users/getAll", {}, "");
 
             callback();
         });
     },
-    doActionByPackageType(packageBody) {
+    doActionByPackageType(packageBody, sessionId) {
         switch (packageBody.packageType) {
             case 'GET_ALL':
                 console.log('packageType: GET_ALL');//LOG
@@ -43,29 +59,51 @@ const socketApi = {
             case 'DELETE':
                 console.log('packageType: DELETE');//LOG
                 viewApi.removeRow(dataTable, packageBody.id);
+                if (sessionId.includes(packageBody.sessionIdRegex)) {
+                    viewApi.clearForm();
+                    viewApi.successNoty("Record deleted");
+                }
                 break;
             case 'UPDATE':
                 console.log('packageType: UPDATE');//LOG
                 viewApi.addRow(dataTable, packageBody.users[0]);
                 viewApi.removeRow(dataTable, packageBody.id);
+                if (sessionId.includes(packageBody.sessionIdRegex)) {
+                    viewApi.clearForm();
+                    viewApi.successNoty("Record update");
+                }
                 break;
             case 'CREATE':
                 console.log('packageType: CREATE');//LOG
                 viewApi.addRow(dataTable, packageBody.users[0]);
+                if (sessionId.includes(packageBody.sessionIdRegex)) {
+                    viewApi.clearForm();
+                    viewApi.successNoty("Record create");
+                }
                 break;
-            // case 'GET':
-            //     console.log('packageType: GET');//LOG
-            //     viewApi.addRow(dataTable, packageBody.users[0]);
-            //     break;
-            // case 'ERROR':
-            //     console.log('packageType: ERROR');//LOG
-            //     viewApi.failNoty(packageBody);
-            //     break;
+            case 'GET':
+                console.log('packageType: GET');//LOG
+                viewApi.addRow(dataTable, packageBody.users[0]);
+                break;
+            case 'ERROR':
+                console.log('packageType: ERROR');//LOG
+                viewApi.failNoty(packageBody.apiError);
+                if (packageBody.apiError.type === "DATA_NOT_FOUND") {
+                    viewApi.clearForm();
+                }
+                break;
             default:
                 console.log('packageType: none');//LOG
                 alert('NO RESPONSE TYPE');
         }
-        viewApi.clearForm();
+    },
+    getRandomString(length) {
+        var randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var result = '';
+        for (var i = 0; i < length; i++) {
+            result += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+        }
+        return result;
     }
 }
 
@@ -217,17 +255,9 @@ const viewApi = {
         console.log("requestBody: " + formData);//LOG
         return formData;
     },
-    closeNoty() {
-        console.log("<< closeNoty() >>");//LOG
-        if (failedNote) {
-            failedNote.close();
-            failedNote = undefined;
-        }
-    },
     successNoty(key) {
         console.log("<< successNoty() >>");//LOG
 
-        this.closeNoty();
         new Noty({
             text: "<span class='fa fa-lg fa-check'></span> &nbsp;" + key,
             type: "success",
@@ -237,20 +267,14 @@ const viewApi = {
             timeout: 1000
         }).show();
     },
-    failNoty(jqXHR) {
+    failNoty(apiError) {
         console.log("<< failNoty() >>");//LOG
-        const serverErrMsg = {
-            url: "",
-            type: "SERVER_ERROR",
-            typeMessage: "Server error",
-            details: ["Server disconnect"]
-        };
-        const errorInfo = (typeof jqXHR.responseText === "undefined") ? serverErrMsg : $.parseJSON(jqXHR.responseText);
-        console.log(jqXHR);
-        console.log("type: " + errorInfo.type);
-        console.log("details: " + errorInfo.details);
+        console.log(apiError);
+        console.log("type: " + apiError.type);
+        console.log("details: " + apiError.details);
+
         failedNote = new Noty({
-            text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + errorInfo.typeMessage + "<br>" + errorInfo.details.join("<br>"),
+            text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + apiError.typeMessage + "<br>" + apiError.details.join("<br>"),
             type: "error",
             // mint, sunset, relax, nest, metroui, semanticui, light, bootstrap-v3, bootstrap-v4
             theme: "relax",

@@ -3,17 +3,19 @@ package edu.volkov.userapp.web;
 import edu.volkov.userapp.model.User;
 import edu.volkov.userapp.repository.UserRepository;
 import edu.volkov.userapp.to.UserPackage;
+import edu.volkov.userapp.util.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.annotation.SubscribeMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindException;
 
-import java.util.NoSuchElementException;
-
-import static edu.volkov.userapp.util.PackageType.*;
+import static edu.volkov.userapp.to.PackageType.*;
 import static edu.volkov.userapp.util.UserUtil.iterableToArray;
 import static edu.volkov.userapp.util.UserUtil.packUp;
 
@@ -22,61 +24,50 @@ import static edu.volkov.userapp.util.UserUtil.packUp;
 @Slf4j
 public class UserSocketController {
 
-    private final UserRepository repository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    @MessageMapping("/users/get/{id}")
-    @SendTo("/topic/users")
-    public UserPackage get(@DestinationVariable Integer id) {
-        log.info("\n << get by id: {} >>", id);
-        User user = repository.findById(id).orElse(null);
-        if (user == null) {
-            throw new NoSuchElementException("no user by id: " + id);
-        }
-        return packUp(GET, user);
-    }
+    private final UserRepository repository;
+    private final ValidationUtil validationUtil;
 
     @MessageMapping("/users/create")
     @SendTo("/topic/users")
-    public UserPackage create(User user) {
+    public UserPackage create(User user, @Header("simpSessionId") String sessionId) throws BindException {
         log.info("\n << create: {} >>", user);
-        if (!user.isNew()) {
-            throw new RuntimeException("user has id, he is not new");
-        }
+        validationUtil.validateBeforeCreate(user);
         User created = repository.save(user);
-        log.info("\n << created: {} >>", created);
-        return packUp(CREATE, created);
+        return packUp(sessionId.substring(0, sessionId.length() / 2), CREATE, created);
     }
 
     @MessageMapping("/users/delete/{id}")
     @SendTo("/topic/users")
-    public UserPackage delete(@DestinationVariable Integer id) {
+    public UserPackage delete(@DestinationVariable Integer id, @Header("simpSessionId") String sessionId) throws NotFoundException {
         log.info("\n << delete by id: {} >>", id);
-        if (repository.delete(id) == 0) {
-            throw new NoSuchElementException("no user by id: " + id);
-        }
-        User deleted = new User(id, "", "", "", "");
-        return packUp(DELETE, deleted);
+        validationUtil.checkNotFoundWithId(repository.delete(id) != 0, id);
+        System.out.println("!!!!!!!" + sessionId);
+        return packUp(sessionId.substring(0, sessionId.length() / 2), DELETE, new User(id, "", "", "", ""));
     }
 
     @MessageMapping("/users/update/{id}")
     @SendTo("/topic/users")
-    public UserPackage update(@DestinationVariable Integer id, User user) {
+    public UserPackage update(@DestinationVariable Integer id, User user, @Header("simpSessionId") String sessionId) throws NotFoundException, BindException {
         log.info("\n << update: {} >>", user);
-        if (!user.getId().equals(id)) {
-            throw new RuntimeException("id is not the user id");
-        }
-        User checked = repository.findById(id).orElse(null);
-        if (checked == null) {
-            throw new NoSuchElementException("update failed, no user by id: " + user.getId());
-        }
+        validationUtil.validateBeforeUpdate(user, id);
         User updated = repository.save(user);
-        log.info("\n << updated: {} >>", updated);
-        return packUp(UPDATE, updated);
+        return packUp(sessionId.substring(0, sessionId.length() / 2), UPDATE, updated);
     }
 
-    @SubscribeMapping("/users")
-    public UserPackage getAll() {
+    @MessageMapping("/users/getAll")
+    @SendToUser("/queue/users")
+    public UserPackage getAll(@Header("simpSessionId") String sessionId) {
         log.info("\n << getAll >>");
-        return packUp(GET_ALL, iterableToArray(repository.findAll()));
+        return packUp(sessionId.substring(0, sessionId.length() / 2), GET_ALL, iterableToArray(repository.findAll()));
+    }
+
+    @MessageMapping("/users/get/{id}")
+    @SendToUser("/queue/users")
+    public UserPackage get(@DestinationVariable Integer id, @Header("simpSessionId") String sessionId) throws NotFoundException {
+        log.info("\n << get by id: {} >>", id);
+        User user = validationUtil.checkNotFoundWithId(repository.findById(id).orElse(null), id);
+        return packUp(sessionId.substring(0, sessionId.length() / 2), GET, user);
     }
 }
