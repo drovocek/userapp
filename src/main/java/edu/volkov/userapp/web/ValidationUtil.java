@@ -16,10 +16,6 @@ import org.springframework.validation.Validator;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import java.util.Set;
-
 @Component
 @Slf4j
 public class ValidationUtil {
@@ -110,7 +106,7 @@ public class ValidationUtil {
             if (StringUtils.hasText(user.getEmail())) {
                 User dbUser = repository.getByEmail(user.getEmail().toLowerCase());
                 if (dbUser != null && !dbUser.getId().equals(user.getId())) {
-                    errors.rejectValue("email", "User with this email already exists");
+                    errors.rejectValue("email", "exception.duplicateEmail");
                 }
             }
         }
@@ -131,7 +127,7 @@ public class ValidationUtil {
             if (StringUtils.hasText(user.getEmail())) {
                 User dbUser = repository.findById(user.getId()).orElse(null);
                 if (dbUser == null) {
-                    errors.rejectValue("id", "User with this id is not exist");
+                    errors.rejectValue("id", "exception.idDosNotExist");
                 }
             }
         }

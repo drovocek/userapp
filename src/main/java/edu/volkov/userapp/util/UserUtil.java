@@ -8,9 +8,11 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class UserUtil {
-    public static UserPackage packUp(PackageType type, User... user) {
+
+    public static UserPackage packUp(String sessionIdRegex, PackageType type, User... user) {
         return new UserPackage(
                 user.length == 1 ? user[0].id() : null,
+                sessionIdRegex,
                 user,
                 type.name()
         );

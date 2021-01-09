@@ -17,6 +17,8 @@ public class UserPackage implements Serializable {
 
     private Integer id;
 
+    private String sessionIdRegex;
+
     private User[] users;
 
     private String packageType;
@@ -25,6 +27,13 @@ public class UserPackage implements Serializable {
 
     public UserPackage(Integer id, User[] users, String packageType) {
         this.id = id;
+        this.users = users;
+        this.packageType = packageType;
+    }
+
+    public UserPackage(Integer id, String sessionIdRegex, User[] users, String packageType) {
+        this.id = id;
+        this.sessionIdRegex = sessionIdRegex;
         this.users = users;
         this.packageType = packageType;
     }
