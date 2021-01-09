@@ -3,14 +3,16 @@ package edu.volkov.userapp.to;
 import edu.volkov.userapp.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.io.Serializable;
 
 @Getter
 @Setter
 @AllArgsConstructor
-public class UserPackage {
+@NoArgsConstructor
+public class UserPackage implements Serializable {
 
     private Integer id;
 

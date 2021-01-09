@@ -10,9 +10,9 @@ public class UserTestMatcher {
     private final BiConsumer<User, User> assertion;
     private final BiConsumer<Iterable<User>, Iterable<User>> iterableAssertion;
 
-    public UserTestMatcher() {
-        this.assertion = (a, e) -> assertThat(a).isEqualTo(e);
-        this.iterableAssertion = (a, e) -> assertThat(a).isEqualTo(e);
+    public UserTestMatcher(String... fieldsToIgnore) {
+        this.assertion = (a, e) -> assertThat(a).usingRecursiveComparison().ignoringFields(fieldsToIgnore).isEqualTo(e);
+        this.iterableAssertion = (a, e) -> assertThat(a).usingElementComparatorIgnoringFields(fieldsToIgnore).isEqualTo(e);
     }
 
     public void assertMatch(User actual, User expected) {

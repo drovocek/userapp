@@ -24,17 +24,6 @@ public class UserSocketController {
 
     private final UserRepository repository;
 
-    @MessageMapping("/users/get/{id}")
-    @SendTo("/topic/users")
-    public UserPackage get(@DestinationVariable Integer id) {
-        log.info("\n << get by id: {} >>", id);
-        User user = repository.findById(id).orElse(null);
-        if (user == null) {
-            throw new NoSuchElementException("no user by id: " + id);
-        }
-        return packUp(GET, user);
-    }
-
     @MessageMapping("/users/create")
     @SendTo("/topic/users")
     public UserPackage create(User user) {
@@ -74,9 +63,19 @@ public class UserSocketController {
         return packUp(UPDATE, updated);
     }
 
-    @SubscribeMapping("/users")
+    @SubscribeMapping("/users/getAll")
     public UserPackage getAll() {
         log.info("\n << getAll >>");
         return packUp(GET_ALL, iterableToArray(repository.findAll()));
+    }
+
+    @SubscribeMapping("/users/get/{id}")
+    public UserPackage get(@DestinationVariable Integer id) {
+        log.info("\n << get by id: {} >>", id);
+        User user = repository.findById(id).orElse(null);
+        if (user == null) {
+            throw new NoSuchElementException("no user by id: " + id);
+        }
+        return packUp(GET, user);
     }
 }

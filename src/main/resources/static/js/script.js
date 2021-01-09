@@ -26,6 +26,11 @@ const socketApi = {
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);//LOG
 
+            stompClient.subscribe('/app/users', function (userPackage) {
+                const packageBody = JSON.parse(userPackage.body);
+                socketApi.doActionByPackageType(packageBody);
+            });
+
             stompClient.subscribe('/topic/users', function (userPackage) {
                 const packageBody = JSON.parse(userPackage.body);
                 socketApi.doActionByPackageType(packageBody);
