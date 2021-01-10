@@ -37,35 +37,18 @@
 
 ### Endpoints
 
-```diff
-- text in red
-+ text in green
-! text in orange
-# text in gray
-@@ text in purple (and bold)@@
-```
-
 - **Send:**
-```diff
-+  /app/users/create - create new 
-!  /app/users/update/{id} - update 
--  /app/users/delete/{id} - delete 
-+  /app/users/get - get one
-+  /app/users/getAll - get all
-```
-```diff    
-{+ addition 1 +}
-[+ addition 2 +]
-{- deletion 3 -}
-[- deletion 4 -]
-```
+  - ``` /app/users/get ``` - get one
+  - ``` /app/users/getAll ``` - get all
+  - ``` /app/users/create ``` - create new 
+  - ``` /app/users/update/{id} ``` - update 
+  - ``` /app/users/delete/{id} ``` - delete 
 
 - **Subscribe:**
-```diff
-@@ /user/queue/users @@ - receive response by get and get all request 
-+  /user/queue/errors - receive errors resulting from your actions
-+  /topic/users - get all updates for create, update, delete operations
-``` 
+    - ``` /user/queue/users ``` - receive response by get and get all request 
+    - ``` /user/queue/errors ``` - receive errors resulting from your actions
+    - ``` /topic/users ``` - get all updates for create, update, delete operations
+
 ### Transfer objects:
 - **Request:**
 ```json
