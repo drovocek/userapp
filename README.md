@@ -1,7 +1,9 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9a72b9652c55429f87a3d0e22ff27474)](https://app.codacy.com/gh/drovocek/userapp?utm_source=github.com&utm_medium=referral&utm_content=drovocek/userapp&utm_campaign=Badge_Grade)
 [![Build Status](https://www.travis-ci.com/drovocek/userapp.svg?branch=master)](https://www.travis-ci.com/drovocek/userapp)
+
 # Test task
 [**DEMO**](https://websocketuserapp.herokuapp.com/)
+
 ## Completion date 
 10 January 2021
 
