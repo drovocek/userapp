@@ -54,10 +54,10 @@
 +  /app/users/getAll - get all
 ```
 ```diff    
-- {+ addition 1 +}
-- [+ addition 2 +]
-- {- deletion 3 -}
-- [- deletion 4 -]
+{+ addition 1 +}
+[+ addition 2 +]
+{- deletion 3 -}
+[- deletion 4 -]
 ```
 
 - **Subscribe:**
