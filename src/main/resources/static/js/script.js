@@ -139,7 +139,7 @@ const viewApi = {
             ],
             order: [
                 [
-                    3,
+                    4,
                     "asc"
                 ]
             ],
