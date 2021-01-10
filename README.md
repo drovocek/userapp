@@ -35,7 +35,7 @@
 
 ## Documentation
 
-### Endpoints
+### Endpoints:
 
 - **Stomp:**
   - ``` /websocket ``` - connection point
