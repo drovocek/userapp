@@ -48,7 +48,7 @@
   - ``` /app/users/delete/{id} ``` - delete 
 
 - **Subscribe:**
-    - ``` /user/queue/users ``` - receive response by ```get``` and ```get all``` request 
+    - ``` /user/queue/users ``` - receive response by ```get``` and ```getAll``` request 
     - ``` /user/queue/errors ``` - receive errors resulting from your actions
     - ``` /topic/users ``` - get all updates for ```create```, ```update```, ```delete``` operations
 
@@ -87,7 +87,7 @@
   "apiError":{
               "type":"",
               "typeMessage":"",
-              "details":[""]
+              "details":[]
              }
 }
 ```
@@ -96,8 +96,8 @@
 | ---------- | ------ | ---------------------------------- | 
 | `packageType` | String | Type of response content: "GET", "GET_ALL", "UPDATE", "CREATE", "DELETE", "ERROR" | 
 | `sessionIdRegex` | String | Part of session id                         | 
-| `deletedIds` | Array[] | Deleted users ids (Number) | 
-| `users` | Object | Data entity                         | 
+| `deletedIds` | Array | Deleted users ids (Number) | 
+| `users` | Object | User entity                         | 
 | `apiError` | Object | Error entity | 
 | `type` | String | Type of error: "DATA_NOT_FOUND", "VALIDATION_ERROR", "APP_ERROR" |
 | `typeMessage` | String | Error description |
