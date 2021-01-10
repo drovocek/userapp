@@ -34,16 +34,8 @@
 Делать по-возможности на Spring Boot.
 
 ## Documentation
-```json
-{
-    "id":"String",
-    "firstName":"String",
-    "lastName":"String",
-    "phoneNumber":"String",
-    "email":"String"
-}
-```
-## Endpoints
+
+### Endpoints
 
 ```diff
 - text in red
@@ -54,18 +46,20 @@
 ```
 
 - **Send:**
-    - /app/users/create - create new 
-    - /app/users/update/{id} - update 
-    - /app/users/delete/{id} - delete 
-    - /app/users/get - get one
-    - /app/users/getAll - get all
-    
+```diff
++  /app/users/create - create new 
+!  /app/users/update/{id} - update 
+-  /app/users/delete/{id} - delete 
++  /app/users/get - get one
++  /app/users/getAll - get all
+```    
 - **Subscribe:**
-    - /user/queue/users - receive response by get and get all request 
-    - /user/queue/errors - receive errors resulting from your actions
-    - /topic/users - get all updates for create, update, delete operations
-
-## Transfer objects:
+```diff
+@@ /user/queue/users @@ - receive response by get and get all request 
++  /user/queue/errors - receive errors resulting from your actions
++  /topic/users - get all updates for create, update, delete operations
+``` 
+### Transfer objects:
 - **Request:**
 ```json
 {
@@ -80,11 +74,11 @@
 
 | Param       | Type   | Constraints                             |
 | ---------- | ------ | ---------------------------------- | 
-| `id` | String | not blank for create new user | 
-| `firstName` | String | not blank                         | 
-| `lastName` | String | not blank | 
-| `phoneNumber` | String | not blank                          | 
-| `email` | String | not blank, email format, not already contained in the table | 
+| `id` | String | Not blank for create new user | 
+| `firstName` | String | Not blank                         | 
+| `lastName` | String | Not blank | 
+| `phoneNumber` | String | Not blank                          | 
+| `email` | String | Not blank, email format, not already contained in the table | 
 - **Response:**
 ```json
 {
@@ -109,11 +103,11 @@
 
 | Param       | Type   | Description                             |
 | ---------- | ------ | ---------------------------------- | 
-| `packageType` | String | type of response content: "GET", "GET_ALL", "UPDATE", "CREATE", "DELETE", "ERROR" | 
-| `sessionIdRegex` | String | part of session id                         | 
-| `deletedIds` | Array[] | deleted users ids (NUMBER) | 
+| `packageType` | String | Type of response content: "GET", "GET_ALL", "UPDATE", "CREATE", "DELETE", "ERROR" | 
+| `sessionIdRegex` | String | Part of session id                         | 
+| `deletedIds` | Array[] | Deleted users ids (Number) | 
 | `users` | Object | Data entity                         | 
 | `apiError` | Object | Error entity | 
-| `type` | String | type of error: "DATA_NOT_FOUND", "VALIDATION_ERROR", "APP_ERROR" |
-| `typeMessage` | String | error description |
-| `details` | String | details of error |
+| `type` | String | Type of error: "DATA_NOT_FOUND", "VALIDATION_ERROR", "APP_ERROR" |
+| `typeMessage` | String | Error description |
+| `details` | String | Details of error (String) |
