@@ -37,6 +37,9 @@
 
 ### Endpoints
 
+- **Stomp:**
+  - ``` /websocket ``` - connection point
+
 - **Send:**
   - ``` /app/users/get ``` - get one
   - ``` /app/users/getAll ``` - get all
@@ -45,9 +48,9 @@
   - ``` /app/users/delete/{id} ``` - delete 
 
 - **Subscribe:**
-    - ``` /user/queue/users ``` - receive response by get and get all request 
+    - ``` /user/queue/users ``` - receive response by ```get``` and ```get all``` request 
     - ``` /user/queue/errors ``` - receive errors resulting from your actions
-    - ``` /topic/users ``` - get all updates for create, update, delete operations
+    - ``` /topic/users ``` - get all updates for ```create```, ```update```, ```delete``` operations
 
 ### Transfer objects:
 - **Request:**
@@ -60,11 +63,10 @@
     "email":""
 }
 ```
-- **Constraints**
 
 | Param       | Type   | Constraints                             |
 | ---------- | ------ | ---------------------------------- | 
-| `id` | String | Not blank for create new user | 
+| `id` | String | Blank for create new user | 
 | `firstName` | String | Not blank                         | 
 | `lastName` | String | Not blank | 
 | `phoneNumber` | String | Not blank                          | 
@@ -74,7 +76,7 @@
 {
   "packageType":"",
   "sessionIdRegex":"",
-  "deletedIds":[""],
+  "deletedIds":[],
   "users":[{
             "id":0,
             "firstName":"",
@@ -89,7 +91,6 @@
              }
 }
 ```
-- **Description**
 
 | Param       | Type   | Description                             |
 | ---------- | ------ | ---------------------------------- | 
