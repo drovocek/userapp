@@ -9,15 +9,6 @@ import java.util.stream.StreamSupport;
 
 public class UserUtil {
 
-    public static UserPackage packUp(String sessionIdRegex, PackageType type, User... user) {
-        return new UserPackage(
-                user.length == 1 ? user[0].id() : null,
-                sessionIdRegex,
-                user,
-                type.name()
-        );
-    }
-
     public static User[] iterableToArray(Iterable<User> users) {
         User[] usersArr = new User[0];
         return StreamSupport.stream(users.spliterator(), false)

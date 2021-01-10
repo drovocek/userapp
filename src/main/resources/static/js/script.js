@@ -58,7 +58,7 @@ const socketApi = {
                 break;
             case 'DELETE':
                 console.log('packageType: DELETE');//LOG
-                viewApi.removeRow(dataTable, packageBody.id);
+                viewApi.removeRow(dataTable, packageBody.deletedIds[0]);
                 if (sessionId.includes(packageBody.sessionIdRegex)) {
                     viewApi.clearForm();
                     viewApi.successNoty("Record deleted");

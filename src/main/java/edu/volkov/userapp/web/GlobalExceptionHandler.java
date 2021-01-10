@@ -1,6 +1,5 @@
 package edu.volkov.userapp.web;
 
-import edu.volkov.userapp.to.PackageType;
 import edu.volkov.userapp.to.UserPackage;
 import edu.volkov.userapp.util.exception.ApiError;
 import edu.volkov.userapp.util.exception.ErrorType;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import java.util.HashMap;
 
+import static edu.volkov.userapp.to.PackageType.ERROR;
 import static edu.volkov.userapp.util.exception.ErrorType.*;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -71,7 +71,6 @@ public class GlobalExceptionHandler {
 
     private UserPackage getApiError(ErrorType errorType, String... details) {
         log.info("\n<<getApiError>>");
-        UserPackage packageWithErr = new UserPackage();
 
         ApiError apiError = new ApiError(
                 errorType,
@@ -79,9 +78,8 @@ public class GlobalExceptionHandler {
                 details != null ? details : new String[0]
         );
 
-        packageWithErr.setApiError(apiError);
-        packageWithErr.setPackageType(PackageType.ERROR.name());
-
-        return packageWithErr;
+        return UserPackage.builder()
+                .packageType(ERROR)
+                .apiError(apiError).build();
     }
 }
