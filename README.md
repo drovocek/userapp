@@ -52,7 +52,14 @@
 -  /app/users/delete/{id} - delete 
 +  /app/users/get - get one
 +  /app/users/getAll - get all
-```    
+```
+```diff    
+- {+ addition 1 +}
+- [+ addition 2 +]
+- {- deletion 3 -}
+- [- deletion 4 -]
+```
+
 - **Subscribe:**
 ```diff
 @@ /user/queue/users @@ - receive response by get and get all request 
