@@ -1,28 +1,20 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9a72b9652c55429f87a3d0e22ff27474)](https://app.codacy.com/gh/drovocek/userapp?utm_source=github.com&utm_medium=referral&utm_content=drovocek/userapp&utm_campaign=Badge_Grade)
 [![Build Status](https://www.travis-ci.com/drovocek/userapp.svg?branch=master)](https://www.travis-ci.com/drovocek/userapp)
-# Test task
 
-demo  https://websocketuserapp.herokuapp.com/
+# Test task
+[**DEMO**](https://websocketuserapp.herokuapp.com/)
 
 ## Completion date 
 10 January 2021
-
-## Theme 
-Test task for getting a job
 
 ## Technology stack
 - Java 8
 - Spring Boot
 - Spring WebSocket
-- H2
+- PostgreSQL
 - Slf4j
 - JUnit4
 - JQuery, BootStrap
-
-## Documentation
-html
-
-pdf
 
 ## Task
 Сделать мини-веб приложение из одной таблицы с 4-мя полями: Номер, Емейл, Имя, Фамилия.
@@ -42,3 +34,73 @@ pdf
 Код должен быть максимально похож на законченное приложение, готов к развертыванию в облаке, покрыт тестами.
 
 Делать по-возможности на Spring Boot.
+
+## Documentation
+
+### Endpoints:
+
+- **Stomp:**
+  - ``` /websocket ``` - connection point
+
+- **Send:**
+  - ``` /app/users/get ``` - get one
+  - ``` /app/users/getAll ``` - get all
+  - ``` /app/users/create ``` - create new 
+  - ``` /app/users/update/{id} ``` - update 
+  - ``` /app/users/delete/{id} ``` - delete 
+
+- **Subscribe:**
+    - ``` /user/queue/users ``` - receive response by ```get``` and ```getAll``` request 
+    - ``` /user/queue/errors ``` - receive errors resulting from your actions
+    - ``` /topic/users ``` - get all updates for ```create```, ```update```, ```delete``` operations
+
+### Transfer objects:
+- **Request:**
+```json
+{
+    "id":"",
+    "firstName":"",
+    "lastName":"",
+    "phoneNumber":"",
+    "email":""
+}
+```
+
+| Param       | Type   | Constraints                             |
+| ---------- | ------ | ---------------------------------- | 
+| `id` | String | Blank for create new user | 
+| `firstName` | String | Not blank                         | 
+| `lastName` | String | Not blank | 
+| `phoneNumber` | String | Not blank                          | 
+| `email` | String | Not blank, email format, not already contained in the table | 
+- **Response:**
+```json
+{
+  "packageType":"",
+  "sessionIdRegex":"",
+  "deletedIds":[],
+  "users":[{
+            "id":0,
+            "firstName":"",
+            "lastName":"",
+            "phoneNumber":"",
+            "email":""
+          }],
+  "apiError":{
+              "type":"",
+              "typeMessage":"",
+              "details":[]
+             }
+}
+```
+
+| Param       | Type   | Description                             |
+| ---------- | ------ | ---------------------------------- | 
+| `packageType` | String | Type of response content: "GET", "GET_ALL", "UPDATE", "CREATE", "DELETE", "ERROR" | 
+| `sessionIdRegex` | String | Part of session id                         | 
+| `deletedIds` | Array | Deleted users ids (Number) | 
+| `users` | Object | User entity                         | 
+| `apiError` | Object | Error entity | 
+| `type` | String | Type of error: "DATA_NOT_FOUND", "VALIDATION_ERROR", "APP_ERROR" |
+| `typeMessage` | String | Error description |
+| `details` | String | Details of error (String) |
