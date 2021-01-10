@@ -17,7 +17,6 @@ import org.springframework.validation.BindException;
 
 import static edu.volkov.userapp.to.PackageType.*;
 import static edu.volkov.userapp.util.UserUtil.iterableToArray;
-import static edu.volkov.userapp.util.UserUtil.packUp;
 
 @Controller
 @AllArgsConstructor
@@ -35,7 +34,10 @@ public class UserSocketController {
         log.info("\n << create: {} >>", user);
         validationUtil.validateBeforeCreate(user);
         User created = repository.save(user);
-        return packUp(sessionId.substring(0, sessionId.length() / 2), CREATE, created);
+        return UserPackage.builder()
+                .packageType(CREATE)
+                .users(new User[]{created})
+                .sessionIdRegex(sessionId.substring(0, sessionId.length() / 2)).build();
     }
 
     @MessageMapping("/users/delete/{id}")
@@ -43,8 +45,10 @@ public class UserSocketController {
     public UserPackage delete(@DestinationVariable Integer id, @Header("simpSessionId") String sessionId) throws NotFoundException {
         log.info("\n << delete by id: {} >>", id);
         validationUtil.checkNotFoundWithId(repository.delete(id) != 0, id);
-        System.out.println("!!!!!!!" + sessionId);
-        return packUp(sessionId.substring(0, sessionId.length() / 2), DELETE, new User(id, "", "", "", ""));
+        return UserPackage.builder()
+                .packageType(DELETE)
+                .deletedIds(new Integer[]{id})
+                .sessionIdRegex(sessionId.substring(0, sessionId.length() / 2)).build();
     }
 
     @MessageMapping("/users/update/{id}")
@@ -53,14 +57,21 @@ public class UserSocketController {
         log.info("\n << update: {} >>", user);
         validationUtil.validateBeforeUpdate(user, id);
         User updated = repository.save(user);
-        return packUp(sessionId.substring(0, sessionId.length() / 2), UPDATE, updated);
+        return UserPackage.builder()
+                .packageType(UPDATE)
+                .users(new User[]{updated})
+                .sessionIdRegex(sessionId.substring(0, sessionId.length() / 2)).build();
     }
 
     @MessageMapping("/users/getAll")
     @SendToUser("/queue/users")
     public UserPackage getAll(@Header("simpSessionId") String sessionId) {
         log.info("\n << getAll >>");
-        return packUp(sessionId.substring(0, sessionId.length() / 2), GET_ALL, iterableToArray(repository.findAll()));
+        User[] allUsers = iterableToArray(repository.findAll());
+        return UserPackage.builder()
+                .packageType(GET_ALL)
+                .users(allUsers)
+                .sessionIdRegex(sessionId.substring(0, sessionId.length() / 2)).build();
     }
 
     @MessageMapping("/users/get/{id}")
@@ -68,6 +79,9 @@ public class UserSocketController {
     public UserPackage get(@DestinationVariable Integer id, @Header("simpSessionId") String sessionId) throws NotFoundException {
         log.info("\n << get by id: {} >>", id);
         User user = validationUtil.checkNotFoundWithId(repository.findById(id).orElse(null), id);
-        return packUp(sessionId.substring(0, sessionId.length() / 2), GET, user);
+        return UserPackage.builder()
+                .packageType(GET)
+                .users(new User[]{user})
+                .sessionIdRegex(sessionId.substring(0, sessionId.length() / 2)).build();
     }
 }

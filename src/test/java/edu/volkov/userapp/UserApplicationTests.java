@@ -244,7 +244,7 @@ public class UserApplicationTests {
         stompSession.subscribe(SUBSCRIBE_ENDPOINT, new CreateUserPackageFrameHandler());
         stompSession.send(SEND_DELETE_ENDPOINT + USER1_ID, null);
 
-        Integer deletedId = completableUserPackageFuture.get(2, SECONDS).getId();
+        Integer deletedId = completableUserPackageFuture.get(2, SECONDS).getDeletedIds()[0];
         assertNotNull(deletedId);
 
         User deleted = repository.findById(USER1_ID).orElse(null);
