@@ -5,7 +5,7 @@
 demo  https://websocketuserapp.herokuapp.com/
 
 ## Completion date 
-10 January 2021 (in progress)
+10 January 2021
 
 ## Theme 
 Test task for getting a job
