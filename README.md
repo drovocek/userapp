@@ -72,7 +72,7 @@
 | `firstName` | String | Not blank, size must be between 0 and 50                          | 
 | `lastName` | String | Not blank, size must be between 0 and 50 | 
 | `phoneNumber` | String | Not blank, must be in format: +d{1,3}_(ddd)_ddd-dddd                          | 
-| `email` | String | Not blank, email format, not already contained in the table | 
+| `email` | String | Not blank, email format, not already contained in the table, size must be between 0 and 50 | 
 - **Response:**
 ```json
 {
