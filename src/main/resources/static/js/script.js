@@ -117,10 +117,6 @@ const viewApi = {
             responsive: true,
             columns: [
                 {
-                    title: "Id",
-                    data: "id"
-                },
-                {
                     title: "First Name",
                     data: "firstName"
                 },
@@ -135,6 +131,10 @@ const viewApi = {
                 {
                     title: "Email",
                     data: "email"
+                },
+                {
+                    title: "Id",
+                    data: "id"
                 }
             ],
             order: [
@@ -145,9 +145,9 @@ const viewApi = {
             ],
             columnDefs: [
                 {
-                    targets: [0],
+                    targets: [4],
                     visible: false,
-                    searchable: true
+                    searchable: false
                 }
             ]
         });
@@ -162,8 +162,8 @@ const viewApi = {
         });
 
         const sellLayout = '<input class="form-control py-2 border-right-0 border" type="search" placeholder="Search">';
-
-        $("#realtime thead tr").clone(true).appendTo("#realtime thead");
+        const filterRow = '<tr><th >x1</th><th>x2</th><th>x3</th><th>x4</th></tr>';
+        $("#realtime thead").append(filterRow);
         $("#realtime thead tr:eq(1) th").each(function (i) {
 
             $(this).html(sellLayout);
@@ -177,7 +177,6 @@ const viewApi = {
                 }
             });
         });
-        // stompClient.send("/app/users/getAll", {}, "");
     },
     printTable(usersArray) {
         console.log("<< printTable() >>");//LOG
