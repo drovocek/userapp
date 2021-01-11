@@ -1,5 +1,6 @@
 var stompClient = null;
 var dataTable = null;
+var phoneMask = null;
 
 const socketApi = {
     createOrUpdate() {
@@ -177,6 +178,8 @@ const viewApi = {
                 }
             });
         });
+
+        viewApi.addPhoneMask();
     },
     printTable(usersArray) {
         console.log("<< printTable() >>");//LOG
@@ -208,7 +211,6 @@ const viewApi = {
 
         if ($(this).hasClass("selected")) {
             $(this).removeClass("selected");
-            this.clearForm();
         } else {
             dataTable.$("tr.selected").removeClass("selected");
             $(this).addClass("selected");
@@ -217,6 +219,7 @@ const viewApi = {
     },
     clearForm() {
         console.log("<< clearForm() >>");//LOG
+        phoneMask.setRawValue("+7 ");
         $(".selected").removeClass("selected");
         $("#detailsForm").find(":input").val("");
         viewApi.drawFormDetails(false);
@@ -230,6 +233,7 @@ const viewApi = {
         $('#lastName').val(dataSet.lastName);
         $('#phoneNumber').val(dataSet.phoneNumber);
         $('#email').val(dataSet.email);
+        phoneMask.setRawValue(dataSet.phoneNumber);
 
         this.drawFormDetails(true);
     },
@@ -247,6 +251,16 @@ const viewApi = {
         formTitle.html((isForUpdate) ? "Update User" : "Create User");
 
         (isForUpdate) ? deleteBtn.show() : deleteBtn.hide();
+    },
+    addPhoneMask() {
+        phoneMask =
+            new Cleave('#phoneNumber', {
+                blocks: [2, 3, 3, 4],
+                delimiters: [" (", ") ", "-"],
+                delimiterLazyShow: true,
+                prefix: "+7",
+                numericOnly: true
+            });
     },
     buildRequestBody() {
         console.log("<< buildRequestBody() >> ");//LOG
