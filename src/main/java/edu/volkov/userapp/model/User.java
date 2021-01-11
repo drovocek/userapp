@@ -31,12 +31,12 @@ public class User implements Persistable<Integer>, Serializable {
     private Integer id;
 
     @NotBlank(message = "First name must not be empty")
-    @Size(max = 100, message = "First name size must be between 0 and 100")
+    @Size(max = 50, message = "First name size must be between 0 and 50")
     @Column(name = "first_name")
     private String firstName;
 
     @NotBlank(message = "Last name must not be empty")
-    @Size(max = 100, message = "Last name size must be between 0 and 100")
+    @Size(max = 50, message = "Last name size must be between 0 and 50")
     @Column(name = "last_name")
     private String lastName;
 
@@ -49,7 +49,7 @@ public class User implements Persistable<Integer>, Serializable {
 
     @NotBlank(message = "Email must not be empty")
     @Email(message = "Invalid format of Email")
-    @Size(max = 100, message = "Email size must be between 0 and 100")
+    @Size(max = 50, message = "Email size must be between 0 and 50")
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 

@@ -37,7 +37,7 @@
 
 ## Documentation
 
-### Endpoints:
+### Endpoints
 
 - **Stomp:**
   - ``` /websocket ``` - connection point
@@ -54,7 +54,7 @@
     - ``` /user/queue/errors ``` - receive errors resulting from your actions
     - ``` /topic/users ``` - get all updates for ```create```, ```update```, ```delete``` operations
 
-### Transfer objects:
+### Transfer objects
 - **Request:**
 ```json
 {
@@ -69,9 +69,9 @@
 | Param       | Type   | Constraints                             |
 | ---------- | ------ | ---------------------------------- | 
 | `id` | String | Blank for create new user | 
-| `firstName` | String | Not blank                         | 
-| `lastName` | String | Not blank | 
-| `phoneNumber` | String | Not blank                          | 
+| `firstName` | String | Not blank, size must be between 0 and 50                          | 
+| `lastName` | String | Not blank, size must be between 0 and 50 | 
+| `phoneNumber` | String | Not blank, must be in format: +d{1,3}_(ddd)_ddd-dddd                          | 
 | `email` | String | Not blank, email format, not already contained in the table | 
 - **Response:**
 ```json
@@ -104,3 +104,10 @@
 | `type` | String | Type of error: "DATA_NOT_FOUND", "VALIDATION_ERROR", "APP_ERROR" |
 | `typeMessage` | String | Error description |
 | `details` | String | Details of error (String) |
+
+### Errors
+| Type                 | TypeMessage    | Details     | Description 
+| ------------------- | --------------- | -------------------- | --------------------------- |
+| DATA_NOT_FOUND     | Data not found   | User with this id is not exist | You sent an id for which there is no entity                              |
+| VALIDATION_ERROR   | Validation error | Different options depending on the violated constraints   | Field constraint violated for transfer object| 
+| APP_ERROR         | Application error | Some unknown shit    | You did something really bad |
