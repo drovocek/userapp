@@ -2,10 +2,10 @@
 [![Build Status](https://www.travis-ci.com/drovocek/userapp.svg?branch=master)](https://www.travis-ci.com/drovocek/userapp)
 
 # Test task
-[**DEMO**](https://websocketuserapp.herokuapp.com/)
+:link: [**DEMO**](https://websocketuserapp.herokuapp.com/)
 
 ## Completion date 
-10 January 2021
+:heavy_check_mark: 10 January 2021
 
 ## Technology stack
 - Java 8
@@ -55,7 +55,7 @@
     - ``` /topic/users ``` - get all updates for ```create```, ```update```, ```delete``` operations
 
 ### Transfer objects
-- **Request:**
+:email: **Request:**
 ```json
 {
     "id":"",
@@ -66,14 +66,15 @@
 }
 ```
 
-| Param       | Type   | Constraints                             |
+| Param       | Type   | Constraints :warning:                             |
 | ---------- | ------ | ---------------------------------- | 
 | `id` | String | Blank for create new user | 
 | `firstName` | String | Not blank, size must be between 0 and 50                          | 
 | `lastName` | String | Not blank, size must be between 0 and 50 | 
 | `phoneNumber` | String | Not blank, must be in format: +d{1,3}_(ddd)_ddd-dddd                          | 
 | `email` | String | Not blank, email format, not already contained in the table, size must be between 0 and 50 | 
-- **Response:**
+
+:package: **Response:**
 ```json
 {
   "packageType":"",
