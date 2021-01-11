@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
@@ -41,7 +42,8 @@ public class User implements Persistable<Integer>, Serializable {
 
 
     @NotBlank(message = "Phone number must not be empty")
-    @Size(max = 30, message = "Phone number size must be between 0 and 30")
+    @Pattern(regexp = "^(\\+\\d{1,3}( )?)(\\(\\d{3}\\))[- .]\\d{3}[- .]\\d{4}$",
+            message = "must be in format: +d{1,3}_(ddd)_ddd-dddd")
     @Column(name = "phone_number")
     private String phoneNumber;
 

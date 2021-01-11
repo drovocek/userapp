@@ -37,6 +37,7 @@ import java.util.concurrent.TimeoutException;
 import static edu.volkov.userapp.testdata.UserTestData.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
+import static edu.volkov.userapp.util.exception.ErrorType.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Sql(scripts = "classpath:testData.sql", config = @SqlConfig(encoding = "UTF-8"))
@@ -88,6 +89,16 @@ public class UserApplicationTests {
         }
     }
 
+    private void checkForError(UserPackage userPackageWithError, ErrorType errorType) {
+        User[] users = userPackageWithError.getUsers();
+        assertNull(users);
+
+        ApiError validationError = userPackageWithError.getApiError();
+        assertNotNull(validationError);
+
+        assertEquals(errorType, validationError.getType());
+    }
+
     @Test
     public void create() throws InterruptedException, ExecutionException, TimeoutException {
 
@@ -126,13 +137,7 @@ public class UserApplicationTests {
 
         UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
 
-        User[] users = userPackageWithError.getUsers();
-        assertNull(users);
-
-        ApiError notFoundError = userPackageWithError.getApiError();
-        assertNotNull(notFoundError);
-
-        assertEquals(ErrorType.VALIDATION_ERROR, notFoundError.getType());
+        checkForError(userPackageWithError,VALIDATION_ERROR);
     }
 
     @Test
@@ -151,13 +156,26 @@ public class UserApplicationTests {
 
         UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
 
-        User[] users = userPackageWithError.getUsers();
-        assertNull(users);
+        checkForError(userPackageWithError,VALIDATION_ERROR);
+    }
 
-        ApiError validationError = userPackageWithError.getApiError();
-        assertNotNull(validationError);
+    @Test
+    public void createBadPhoneNumbers() throws InterruptedException, ExecutionException, TimeoutException {
 
-        assertEquals(ErrorType.VALIDATION_ERROR, validationError.getType());
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+        StompSession stompSession = stompClient.connect(URL, new StompSessionHandlerAdapter() {
+        }).get(1, SECONDS);
+
+        User newBadNumberUser = getNew();
+        newBadNumberUser.setPhoneNumber("1 (111) 111 1111");
+
+        stompSession.subscribe(SUBSCRIBE_ERRORS_ENDPOINT, new CreateUserPackageFrameHandler());
+
+        stompSession.send(SEND_CREATE_ENDPOINT, newBadNumberUser);
+        UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
+        checkForError(userPackageWithError, VALIDATION_ERROR);
     }
 
     @Test
@@ -198,13 +216,7 @@ public class UserApplicationTests {
 
         UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
 
-        User[] users = userPackageWithError.getUsers();
-        assertNull(users);
-
-        ApiError validationError = userPackageWithError.getApiError();
-        assertNotNull(validationError);
-
-        assertEquals(ErrorType.VALIDATION_ERROR, validationError.getType());
+        checkForError(userPackageWithError,VALIDATION_ERROR);
     }
 
     @Test
@@ -223,13 +235,7 @@ public class UserApplicationTests {
 
         UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
 
-        User[] users = userPackageWithError.getUsers();
-        assertNull(users);
-
-        ApiError validationError = userPackageWithError.getApiError();
-        assertNotNull(validationError);
-
-        assertEquals(ErrorType.VALIDATION_ERROR, validationError.getType());
+        checkForError(userPackageWithError,VALIDATION_ERROR);
     }
 
     @Test
@@ -268,13 +274,7 @@ public class UserApplicationTests {
 
         UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
 
-        User[] users = userPackageWithError.getUsers();
-        assertNull(users);
-
-        ApiError notFoundError = userPackageWithError.getApiError();
-        assertNotNull(notFoundError);
-
-        assertEquals(ErrorType.DATA_NOT_FOUND, notFoundError.getType());
+        checkForError(userPackageWithError,DATA_NOT_FOUND);
     }
 
     @Test
@@ -310,13 +310,7 @@ public class UserApplicationTests {
 
         UserPackage userPackageWithError = completableUserPackageFuture.get(2, SECONDS);
 
-        User[] users = userPackageWithError.getUsers();
-        assertNull(users);
-
-        ApiError notFoundError = userPackageWithError.getApiError();
-        assertNotNull(notFoundError);
-
-        assertEquals(ErrorType.DATA_NOT_FOUND, notFoundError.getType());
+        checkForError(userPackageWithError,DATA_NOT_FOUND);
     }
 
     @Test

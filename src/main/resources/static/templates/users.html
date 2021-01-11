@@ -25,6 +25,7 @@
                 <form id="detailsForm">
                     <div class="form-group">
                         <input type="hidden" id="id" name="id" class="form-control">
+                        <input type="text" id="form2" class="form-control" style="display: none;">
                     </div>
                     <div class="form-group">
                         <label for="firstName">First Name</label>
@@ -37,7 +38,7 @@
                     </div>
                     <div class="form-group">
                         <label for="phoneNumber">Phone number</label>
-                        <input type="text" name="phoneNumber" id="phoneNumber" placeholder="+x(xxx)xxx-xx-xx"
+                        <input type="text" name="phoneNumber" id="phoneNumber" placeholder="+7 (000) 000-0000"
                                class="form-control">
                     </div>
                     <div class="form-group">
@@ -55,6 +56,8 @@
     </div>
 </div>
 <script type="text/javascript" th:src="@{/js/script.js}" defer></script>
+<script type="text/javascript" th:src="@{/js/cleave.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/cleave-phone.ru.js}"></script>
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script type="text/javascript"
