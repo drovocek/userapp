@@ -39,20 +39,23 @@
 
 ### Endpoints
 
-- **Stomp:**
+:star: **Stomp:**
+
   - ``` /websocket ``` - connection point
 
-- **Send:**
+:phone: **Send:**
+
   - ``` /app/users/get ``` - get one
   - ``` /app/users/getAll ``` - get all
   - ``` /app/users/create ``` - create new 
   - ``` /app/users/update/{id} ``` - update 
   - ``` /app/users/delete/{id} ``` - delete 
 
-- **Subscribe:**
-    - ``` /user/queue/users ``` - receive response by ```get``` and ```getAll``` request 
-    - ``` /user/queue/errors ``` - receive errors resulting from your actions
-    - ``` /topic/users ``` - get all updates for ```create```, ```update```, ```delete``` operations
+:mailbox_with_no_mail: **Subscribe:**
+
+- ``` /user/queue/users ``` - receive response by ```get``` and ```getAll``` request 
+- ``` /user/queue/errors ``` - receive errors resulting from your actions
+- ``` /topic/users ``` - get all updates for ```create```, ```update```, ```delete``` operations
 
 ### Transfer objects
 :email: **Request:**
