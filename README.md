@@ -41,7 +41,7 @@
 
 :star: **Stomp:**
 
-  - ``` /websocket ``` - connection point
+  - ``` /websocket ``` - root connection point
 
 :phone: **Send:**
 
